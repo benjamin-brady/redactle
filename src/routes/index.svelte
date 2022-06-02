@@ -1,7 +1,6 @@
 <script>
 	import Span from './../components/Span.svelte'
 	import striptags from 'striptags'
-	import unescape from 'lodash/unescape';
 
 	let title = ''
 	let wiki = ''
@@ -30,7 +29,14 @@
 				let html = data.lead.sections[0].text
 				html = html.replace(/<style.*>.*<\/style>/ig, '')
 				const text = striptags(html);
-				wiki = unescape(text)
+				// &amp;, &lt;, &gt;, &quot;, and &#39;
+				wiki = text
+					.replace(/&nbsp;/g, ' ')
+					.replace(/&(?:amp);/g, '&')
+					.replace(/&(?:lt);/g, '<')
+					.replace(/&(?:gt);/g, '>')
+					.replace(/&(?:quot);/g, '"')
+					.replace(/&(?:#39);/g, "'")
 				// strip citations
 				wiki = wiki.replace(/\[\d+\]/ig, '')
 				renderTokens()
