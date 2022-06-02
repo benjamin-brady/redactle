@@ -1,18 +1,6 @@
-# create-svelte
+# Redactle
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
-
-## Creating a project
-
-If you're seeing this, you've probably already done this step. Congrats!
-
-```bash
-# create a new project in the current directory
-npm init svelte
-
-# create a new project in my-app
-npm init svelte my-app
-```
+A game inspired by https://www.redactle.com/ built in svelte. This is a work in progress; Content is currently hardcoded to one article. My motivation for starting this is to do away with the 1 game per day limit that redactle.com enforces.
 
 ## Developing
 
