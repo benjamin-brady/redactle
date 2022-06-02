@@ -1,27 +1,46 @@
 <script>
 	import Span from './../components/Span.svelte'
-	let titleb64 = 'UHJpbWUgbnVtYmVy'
-	let title = atob(titleb64)
-	const wikib64 = 'QSBwcmltZSBudW1iZXIgKG9yIGEgcHJpbWUpIGlzIGEgbmF0dXJhbCBudW1iZXIgZ3JlYXRlciB0aGFuIDEgdGhhdCBpcyBub3QgYSBwcm9kdWN0IG9mIHR3byBzbWFsbGVyIG5hdHVyYWwgbnVtYmVycy4gQSBuYXR1cmFsIG51bWJlciBncmVhdGVyIHRoYW4gMSB0aGF0IGlzIG5vdCBwcmltZSBpcyBjYWxsZWQgYSBjb21wb3NpdGUgbnVtYmVyLiBGb3IgZXhhbXBsZSwgNSBpcyBwcmltZSBiZWNhdXNlIHRoZSBvbmx5IHdheXMgb2Ygd3JpdGluZyBpdCBhcyBhIHByb2R1Y3QsIDEgw5cgNSBvciA1IMOXIDEsIGludm9sdmUgNSBpdHNlbGYuIEhvd2V2ZXIsIDQgaXMgY29tcG9zaXRlIGJlY2F1c2UgaXQgaXMgYSBwcm9kdWN0ICgyIMOXIDIpIGluIHdoaWNoIGJvdGggbnVtYmVycyBhcmUgc21hbGxlciB0aGFuIDQuIFByaW1lcyBhcmUgY2VudHJhbCBpbiBudW1iZXIgdGhlb3J5IGJlY2F1c2Ugb2YgdGhlIGZ1bmRhbWVudGFsIHRoZW9yZW0gb2YgYXJpdGhtZXRpYzogZXZlcnkgbmF0dXJhbCBudW1iZXIgZ3JlYXRlciB0aGFuIDEgaXMgZWl0aGVyIGEgcHJpbWUgaXRzZWxmIG9yIGNhbiBiZSBmYWN0b3JpemVkIGFzIGEgcHJvZHVjdCBvZiBwcmltZXMgdGhhdCBpcyB1bmlxdWUgdXAgdG8gdGhlaXIgb3JkZXIuCgpUaGUgcHJvcGVydHkgb2YgYmVpbmcgcHJpbWUgaXMgY2FsbGVkIHByaW1hbGl0eS4gQSBzaW1wbGUgYnV0IHNsb3cgbWV0aG9kIG9mIGNoZWNraW5nIHRoZSBwcmltYWxpdHkgb2YgYSBnaXZlbiBudW1iZXIge2Rpc3BsYXlzdHlsZSBufW4sIGNhbGxlZCB0cmlhbCBkaXZpc2lvbiwgdGVzdHMgd2hldGhlciB7ZGlzcGxheXN0eWxlIG59biBpcyBhIG11bHRpcGxlIG9mIGFueSBpbnRlZ2VyIGJldHdlZW4gMiBhbmQge2Rpc3BsYXlzdHlsZSB7c3FydCB7bn19fXtzcXJ0IHtufX0uIEZhc3RlciBhbGdvcml0aG1zIGluY2x1ZGUgdGhlIE1pbGxlcuKAk1JhYmluIHByaW1hbGl0eSB0ZXN0LCB3aGljaCBpcyBmYXN0IGJ1dCBoYXMgYSBzbWFsbCBjaGFuY2Ugb2YgZXJyb3IsIGFuZCB0aGUgQUtTIHByaW1hbGl0eSB0ZXN0LCB3aGljaCBhbHdheXMgcHJvZHVjZXMgdGhlIGNvcnJlY3QgYW5zd2VyIGluIHBvbHlub21pYWwgdGltZSBidXQgaXMgdG9vIHNsb3cgdG8gYmUgcHJhY3RpY2FsLiBQYXJ0aWN1bGFybHkgZmFzdCBtZXRob2RzIGFyZSBhdmFpbGFibGUgZm9yIG51bWJlcnMgb2Ygc3BlY2lhbCBmb3Jtcywgc3VjaCBhcyBNZXJzZW5uZSBudW1iZXJzLiBBcyBvZiBEZWNlbWJlciAyMDE4IHRoZSBsYXJnZXN0IGtub3duIHByaW1lIG51bWJlciBpcyBhIE1lcnNlbm5lIHByaW1lIHdpdGggMjQsODYyLDA0OCBkZWNpbWFsIGRpZ2l0cy5bMV0KClRoZXJlIGFyZSBpbmZpbml0ZWx5IG1hbnkgcHJpbWVzLCBhcyBkZW1vbnN0cmF0ZWQgYnkgRXVjbGlkIGFyb3VuZCAzMDAgQkMuIE5vIGtub3duIHNpbXBsZSBmb3JtdWxhIHNlcGFyYXRlcyBwcmltZSBudW1iZXJzIGZyb20gY29tcG9zaXRlIG51bWJlcnMuIEhvd2V2ZXIsIHRoZSBkaXN0cmlidXRpb24gb2YgcHJpbWVzIHdpdGhpbiB0aGUgbmF0dXJhbCBudW1iZXJzIGluIHRoZSBsYXJnZSBjYW4gYmUgc3RhdGlzdGljYWxseSBtb2RlbGxlZC4gVGhlIGZpcnN0IHJlc3VsdCBpbiB0aGF0IGRpcmVjdGlvbiBpcyB0aGUgcHJpbWUgbnVtYmVyIHRoZW9yZW0sIHByb3ZlbiBhdCB0aGUgZW5kIG9mIHRoZSAxOXRoIGNlbnR1cnksIHdoaWNoIHNheXMgdGhhdCB0aGUgcHJvYmFiaWxpdHkgb2YgYSByYW5kb21seSBjaG9zZW4gbGFyZ2UgbnVtYmVyIGJlaW5nIHByaW1lIGlzIGludmVyc2VseSBwcm9wb3J0aW9uYWwgdG8gaXRzIG51bWJlciBvZiBkaWdpdHMsIHRoYXQgaXMsIHRvIGl0cyBsb2dhcml0aG0uCgpTZXZlcmFsIGhpc3RvcmljYWwgcXVlc3Rpb25zIHJlZ2FyZGluZyBwcmltZSBudW1iZXJzIGFyZSBzdGlsbCB1bnNvbHZlZC4gVGhlc2UgaW5jbHVkZSBHb2xkYmFjaCdzIGNvbmplY3R1cmUsIHRoYXQgZXZlcnkgZXZlbiBpbnRlZ2VyIGdyZWF0ZXIgdGhhbiAyIGNhbiBiZSBleHByZXNzZWQgYXMgdGhlIHN1bSBvZiB0d28gcHJpbWVzLCBhbmQgdGhlIHR3aW4gcHJpbWUgY29uamVjdHVyZSwgdGhhdCB0aGVyZSBhcmUgaW5maW5pdGVseSBtYW55IHBhaXJzIG9mIHByaW1lcyBoYXZpbmcganVzdCBvbmUgZXZlbiBudW1iZXIgYmV0d2VlbiB0aGVtLiBTdWNoIHF1ZXN0aW9ucyBzcHVycmVkIHRoZSBkZXZlbG9wbWVudCBvZiB2YXJpb3VzIGJyYW5jaGVzIG9mIG51bWJlciB0aGVvcnksIGZvY3VzaW5nIG9uIGFuYWx5dGljIG9yIGFsZ2VicmFpYyBhc3BlY3RzIG9mIG51bWJlcnMuIFByaW1lcyBhcmUgdXNlZCBpbiBzZXZlcmFsIHJvdXRpbmVzIGluIGluZm9ybWF0aW9uIHRlY2hub2xvZ3ksIHN1Y2ggYXMgcHVibGljLWtleSBjcnlwdG9ncmFwaHksIHdoaWNoIHJlbGllcyBvbiB0aGUgZGlmZmljdWx0eSBvZiBmYWN0b3JpbmcgbGFyZ2UgbnVtYmVycyBpbnRvIHRoZWlyIHByaW1lIGZhY3RvcnMuIEluIGFic3RyYWN0IGFsZ2VicmEsIG9iamVjdHMgdGhhdCBiZWhhdmUgaW4gYSBnZW5lcmFsaXplZCB3YXkgbGlrZSBwcmltZSBudW1iZXJzIGluY2x1ZGUgcHJpbWUgZWxlbWVudHMgYW5kIHByaW1lIGlkZWFscy4='
-	let wiki = decodeURIComponent(escape(atob(wikib64)));
+	import striptags from 'striptags'
+	import unescape from 'lodash/unescape';
+
+	let title = ''
+	let wiki = ''
 	let guesses = {}
 	let solved = false
 	let regex = /(([^\u0000-\u007F]|\w)+)((\W)*)/ig
 	const stopwords = ['i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you', "you're", "you've", "you'll", "you'd", 'your', 'yours', 'yourself', 'yourselves', 'he', 'him', 'his', 'himself', 'she', "she's", 'her', 'hers', 'herself', 'it', "it's", 'its', 'itself', 'they', 'them', 'their', 'theirs', 'themselves', 'what', 'which', 'who', 'whom', 'this', 'that', "that'll", 'these', 'those', 'am', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing', 'a', 'an', 'the', 'and', 'but', 'if', 'or', 'because', 'as', 'until', 'while', 'of', 'at', 'by', 'for', 'with', 'about', 'against', 'between', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'to', 'from', 'up', 'down', 'in', 'out', 'on', 'off', 'over', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'any', 'both', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 's', 't', 'can', 'will', 'just', 'don', "don't", 'should', "should've", 'now', 'd', 'll', 'm', 'o', 're', 've', 'y', 'ain', 'aren', "aren't", 'couldn', "couldn't", 'didn', "didn't", 'doesn', "doesn't", 'hadn', "hadn't", 'hasn', "hasn't", 'haven', "haven't", 'isn', "isn't", 'ma', 'mightn', "mightn't", 'mustn', "mustn't", 'needn', "needn't", 'shan', "shan't", 'shouldn', "shouldn't", 'wasn', "wasn't", 'weren', "weren't", 'won', "won't", 'wouldn', "wouldn't"]
 	let stopwordsDict ={}
-	stopwords.forEach(w => stopwordsDict[w]=1)
+	stopwords.filter(w => w.length < 7).forEach(w => stopwordsDict[w]=1)
 	
 	let titleTokens = []
 	let contentTokens = []
 	let guess = ''
 	let selectedWord = ''
+
+	function getArticle() {
+		const titles = ['Australia_(continent)', 'Atlas', 'Surveying', 'Empire_of_Japan', 'Architecture', 'Ice_Skating', 'Eiffel_Tower', 'Galaxy', 'Kilogram', 'Carbon']
+		const rand = Math.floor(Math.random() * titles.length);
+		let urlTitle = titles[rand]
+
+		// Fetch from wikimedia rest api e.g. https://en.wikipedia.org/api/rest_v1/page/mobile-sections/Australia_%28continent%29
+		fetch(`https://en.wikipedia.org/api/rest_v1/page/mobile-sections/${urlTitle}`)
+			.then(response => response.json())
+			.then(data => {
+				title = data.lead.displaytitle
+				let html = data.lead.sections[0].text
+				html = html.replace(/<style.*>.*<\/style>/ig, '')
+				const text = striptags(html);
+				wiki = unescape(text)
+				// strip citations
+				wiki = wiki.replace(/\[\d+\]/ig, '')
+				renderTokens()
+			})
+	}
 	
-	
-	// strip citations
-	wiki = wiki.replace(/\[\d+\]/ig, '')
+	getArticle()
 
 	function renderTokens() {
-		console.log('redacting...')
+		console.log('rendering...')
 
 		let titleMatches = [...title.matchAll(regex)]
 		titleTokens = getTokens(titleMatches)
@@ -62,7 +81,7 @@
 		}
 		return tokens
 	}
-	renderTokens()
+	//renderTokens()
 	
 	function selectWord(event) {
 		console.log(event)
@@ -72,6 +91,9 @@
 	
 	function handleSubmit() {
 		selectedWord=guess.toLowerCase()
+		if(selectedWord = 'togglecheats') {
+			solved = !solved
+		}
 		let regex = new RegExp(`\\b${selectedWord}\\b`,'gi')
 		let count = (wiki.match(regex) || []).length
 		guesses[selectedWord] = count

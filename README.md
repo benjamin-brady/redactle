@@ -1,6 +1,8 @@
 # Redactle
 
-A game inspired by https://www.redactle.com/ built in svelte. This is a work in progress; Content is currently hardcoded to one article. My motivation for starting this is to do away with the 1 game per day limit that redactle.com enforces.
+A guessing game inspired by https://www.redactle.com/ built in svelte. The page lods with an article from Wikipedia which is displayed with most of the words redacted. The user must guess word's to reveal the content with the objective of guessing the title of the article in as few guesses as possible.
+
+This is a work in progress; Content is currently hardcoded to 10 articles. Content is fetched from Wikipedia's REST API. My motivation for starting this is to do away with the 1 game per day limit that redactle.com enforces.
 
 ## Developing
 
