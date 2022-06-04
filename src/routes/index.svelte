@@ -212,16 +212,14 @@ function base64decode(str) {
 	<h3>
 		Guesses
 	</h3>
-	<div id="guess-form">
-		<form on:submit|preventDefault={handleSubmit}>
-			<input id="input-guess" bind:value={guess} placeholder="guess a word...">
-		</form>
-	</div>
-		<guess-list>
-			{#each Object.keys(guesses).reverse() as word, i}
-			<span on:click={selectWord(word)} class="{selectedWord==word ? 'highlight word' : 'word'}"><b>{word}</b>({guesses[word]})</span> 
-			{/each}
-		</guess-list>
+	<form id="guess-form" on:submit|preventDefault={handleSubmit}>
+		<input id="input-guess" bind:value={guess} placeholder="guess a word...">
+	</form>
+	<guess-list>
+		{#each Object.keys(guesses).reverse() as word, i}
+		<span on:click={selectWord(word)} class="{selectedWord==word ? 'highlight word' : 'word'}"><b>{word}</b>({guesses[word]})</span> 
+		{/each}
+	</guess-list>
 	</div>
 </div>
 <style>
@@ -258,7 +256,7 @@ function base64decode(str) {
 		color: #b6b6b6;
 	}
 
-	
+
 	@media (max-device-width: 960px) {
 		#main {
 			display: grid;
@@ -297,7 +295,7 @@ function base64decode(str) {
 		display: inline;
 	}
 	#article h2, #article p, guess-list .word {
-		font-family:Consolas,"Liberation Mono","Courier New",monospace;
+		font-family:Consolas,monospace;
 		line-height: 1.5;
 	}
 
@@ -309,11 +307,18 @@ function base64decode(str) {
 	#guesses h3 {
 		margin:0;
 	}
-	
+	#guess-form {
+		display: flex;
+		justify-content: center;
+		width: 100%;
+	}
 	#guesses #input-guess {
 		font-size:1.3em;
 		background-color: #333;
 		color:white;
+		width: 80%;
+		padding:.5em;
+		border-radius: 5px;
 	}
 
 	guess-list .word {
