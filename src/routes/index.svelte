@@ -1,6 +1,7 @@
 <script>
 	import Span from './../components/Span.svelte'
 	import striptags from 'striptags'
+import { get_all_dirty_from_scope } from 'svelte/internal'
 
 	let title = ''
 	let wiki = ''
@@ -18,11 +19,14 @@
 	let sections = []
 	let guess = ''
 	let selectedWord = ''
+	let selectedWordIndex = 0
+	let wordCount = {}
 	let loading = true
 
 	function getArticle() {
-		const rand = Math.floor(Math.random() * titleList.length);
-		let urlTitle = 	atob(titleList[rand])
+		const titles = ['Hydrogen', 'Archery', 'Galaxy', 'Fern', 'Lion', 'Glacier', 'Watt']
+		const rand = Math.floor(Math.random() * titles.length);
+		let urlTitle = titles[rand]
 
 		// Fetch from wikimedia rest api e.g. https://en.wikipedia.org/api/rest_v1/page/mobile-sections/Australia_%28continent%29
 		fetch(`https://en.wikipedia.org/api/rest_v1/page/mobile-sections/${urlTitle}`)
@@ -73,7 +77,7 @@
 		console.log('rendering...')
 
 		sections = []
-
+		wordCount = {}
 		for(const i in wikiSections) {
 			addSection(wikiSections[i].headline, true)
 			if(i == 0) {
@@ -112,9 +116,11 @@
 			let word = matches[i][1]
 			if (word) {
 				let wordLower = word.toLowerCase();
+				wordCount[wordLower] = wordLower in wordCount ? wordCount[wordLower] + 1 : 1
 				let token = {
 					value: word,
 					wordLower: wordLower,
+					id: getWordId(wordLower, wordCount[wordLower]),
 					redacted:
 						!solved
 						&& wordLower.length > 2
@@ -131,20 +137,34 @@
 		return tokens
 	}
 	
-	function selectWord(event) {
-		selectedWord = event.word
+	function selectWord(word) {
+		selectedWordIndex = selectedWord == word ? selectedWordIndex+1 : 1
+		selectedWord = word
+		const wordId = getWordId(selectedWord, selectedWordIndex);
+		let element = document.getElementById(wordId)
+		console.log(`scroll to ${wordId}`)
+		if(element) {
+			element.scrollIntoView();
+		}
 		renderTokens()
 	}
 	
+	function getWordId(word, wordIndex) {
+		let id = `${base64encode(word).replaceAll('=','a')}${wordIndex}`
+		return id
+	}
+
 	function handleSubmit() {
 		const wordRegex = /(\W)+/i
-		// don't allow non-word guesses
+		// TODO don't allow non-word or stopword guesses
 		// if (!wordRegex.test(selectedWord)) {
 		// 	guess = ''
 		// 	console.log('invalid guess')
 		// 	return
 		// }
 		selectedWord=guess.toLowerCase()
+		selectedWordIndex=1
+		selectWord(selectedWord)
 		if(selectedWord == 'togglecheats') {
 			solved = !solved
 		}
@@ -154,33 +174,43 @@
 		guess = ''
 		renderTokens()
 	}
+	function base64encode(str) {
+		let encode = encodeURIComponent(str).replace(/%([a-f0-9]{2})/gi, (m, $1) => String.fromCharCode(parseInt($1, 16)))
+		return btoa(encode)
+	}
+	function base64decode(str) {
+		let decode = atob(str).replace(/[\x80-\uffff]/g, (m) => `%${m.charCodeAt(0).toString(16).padStart(2, '0')}`)
+		return decodeURIComponent(decode)
+	}
 </script>
-<div id="redactle">
-	<div id="main">
+<div id="main">
+	<nav>
 		<h1>Redactle</h1>
-			{#if loading}
+		<p class="info">A puzzle game to guess the title of a random Wikipedia article by revealing the words from the article. 
+			Similar to redactle.com but without the daily game limit.</p>
+	</nav>
+	<div id="article">
+		{#if loading}
 			<p>loading...</p>
+		{/if}
+		{#if solved}
+			<p>Solved in {Object.keys(guesses).length} guesses!</p>
+		{/if}
+		{#each sections as section}
+			{#if section.headline}
+				<h2>
+				{#each section.tokens as token}
+					<Span id={token.id} value={token.value} redacted={token.redacted} highlight={token.highlight || false}></Span>
+				{/each}
+				</h2>
+			{:else}
+				<p>
+				{#each section.tokens as token}
+					<Span id={token.id} value={token.value} redacted={token.redacted} highlight={token.highlight || false}></Span>
+				{/each}
+				</p>
 			{/if}
-			{#if solved}
-				<p>Solved in {Object.keys(guesses).length} guesses!</p>
-			{/if}
-		<article>
-			{#each sections as section}
-				{#if section.headline}
-					<h2>
-					{#each section.tokens as token}
-						<Span value={token.value} redacted={token.redacted} highlight={token.highlight || false}></Span>
-					{/each}
-					</h2>
-				{:else}
-					<p>
-					{#each section.tokens as token}
-						<Span value={token.value} redacted={token.redacted} highlight={token.highlight || false}></Span>
-					{/each}
-					</p>
-				{/if}
-			{/each}
-		</article>
+		{/each}
 	</div>
 
 	<div id="guesses">
@@ -188,48 +218,87 @@
 			Guesses
 		</h3>
 		<div id="guess-form">
-		<form on:submit|preventDefault={handleSubmit}>
-			<input bind:value={guess} placeholder="guess a word...">
-		</form>
+			<form on:submit|preventDefault={handleSubmit}>
+				<input bind:value={guess} placeholder="guess a word...">
+			</form>
 		</div>
 			<guess-list>
 				{#each Object.keys(guesses).reverse() as word, i}
-				<span on:click={selectWord({word})} class="{selectedWord==word ? 'highlight word' : 'word'}"><b>{word}</b> ({guesses[word]})</span> 
+				<span on:click={selectWord(word)} class="{selectedWord==word ? 'highlight word' : 'word'}"><b>{word}</b> ({guesses[word]})</span> 
 				{/each}
 			</guess-list>
 		</div>
 	</div>
 <style>
-	#redactle {
-		font-family:Arial, Helvetica, sans-serif;
-		display:flex;
-		height:100%;
-		width:100%;
-		position: relative;
+	body {
+		margin:0;
+		padding: 0;
+		background: black;
+		color: #b6b6b6;
 	}
+
 	#main {
-		height:100%;
-		position:relative;
+		display: grid;
+		grid-template-rows: 120px 1fr;
+		grid-template-columns: 8fr 2fr;
+		font-family:Arial, Helvetica, sans-serif;
+		height: 100%;
+		position: absolute;
+		background: black;
+		margin: 0;
+		padding: 0;
+		color: #b6b6b6;
 	}
-	article {
-		background: #fffff5;
-		padding:1em;
-		height:100%;
-		overflow:auto;
-		min-width: 30em;
+
+	@media (max-device-width: 960px) {
+		#main {
+			display: grid;
+			grid-template-rows: 50px 1fr 10em;
+			grid-template-columns: 1fr;
+		}
+		#main .info {
+			display: none;
+		}
 	}
-	article h2, article p, guess-list .word {
-		font-family:SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace
+
+	nav {
+		grid-column: 1/-1;
+		background-color: black;
+		border-bottom: 1px solid #6e6e0f;
+		padding: .5em;
+	}
+
+	nav .info {
+		font-size: small;
+	}
+
+	#article {
+		padding:.5em;
+		height:100%;
+		overflow-y:scroll;
 	}
 	#guesses {
-		height:100%;
-		display: block;
-		width:100%;
+		padding:.5em;
+		background: black;
+		color: #b6b6b6;
 	}
+
+	nav h1 {
+		margin:0;
+	}
+	#article h2, #article p, guess-list .word {
+		font-family:SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace
+	}
+
+	#guesses {
+		overflow-y:scroll;
+	}
+	
 	guess-list .word {
 		margin:0 0 0 1em;
 		display: block;
 		float: left;
+		
 	}
 	.highlight {
 		background-color: #66eeff;

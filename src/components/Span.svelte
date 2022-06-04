@@ -1,14 +1,15 @@
 <script>
+    export let id;
     export let value = '';
     export let highlight = false;
     export let redacted = false;
     </script>
     
-    <span class="{highlight ? 'highlight' : ''}">{ redacted ? '▀'.repeat(value.length) : value }</span>
+    <span id={id} class="{highlight ? 'highlight' : ''}">{ redacted ? '▀'.repeat(value.length) : value }</span>
     
     <style>
     .highlight{
         color:black;
-        background-color: #66eeff;
+        background-color: rgb(0, 127, 143);
     }
 </style>
