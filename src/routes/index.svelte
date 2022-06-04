@@ -255,6 +255,7 @@ import { get_all_dirty_from_scope } from 'svelte/internal'
 			display: grid;
 			grid-template-rows: 50px 1fr 10em;
 			grid-template-columns: 1fr;
+			font-size: 1em;
 		}
 		#main .info {
 			display: none;
@@ -307,7 +308,7 @@ import { get_all_dirty_from_scope } from 'svelte/internal'
 	}
 	
 	#guesses #input-guess {
-		font-size:1.5em;
+		font-size:1.3em;
 		background-color: #333;
 		color:white;
 	}
