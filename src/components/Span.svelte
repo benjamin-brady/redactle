@@ -3,11 +3,11 @@
     export let value = '';
     export let highlight = false;
     export let redacted = false;
-    </script>
+</script>
     
-    <span id={id} class="{highlight ? 'highlight' : ''}">{ redacted ? '█'.repeat(value.length) : value }</span>
+<span id={id} class="{highlight ? 'highlight' : ''}">{ redacted ? '█'.repeat(value.length) : value }</span>
     
-    <style>
+<style>
     .highlight{
         background-color: #00becc;
         color: #0f0f0f;
