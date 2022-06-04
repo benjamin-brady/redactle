@@ -4,6 +4,7 @@
 
 	let title = ''
 	let wiki = ''
+	let wikiSections = []
 	let guesses = {}
 	let solved = false
 	let regex = /(([^\u0000-\u007F]|\w)+)((\W)*)/ig
@@ -13,11 +14,13 @@
 	
 	let titleTokens = []
 	let contentTokens = []
+	let sections = []
 	let guess = ''
 	let selectedWord = ''
+	let loading = true
 
 	function getArticle() {
-		const titles = ['Australia_(continent)', 'Atlas', 'Surveying', 'Empire_of_Japan', 'Architecture', 'Ice_Skating', 'Eiffel_Tower', 'Galaxy', 'Kilogram', 'Carbon']
+		const titles = ['Hydrogen', 'Archery', 'Galaxy', 'Fern', 'Lion', 'Glacier', 'Watt']
 		const rand = Math.floor(Math.random() * titles.length);
 		let urlTitle = titles[rand]
 
@@ -27,20 +30,41 @@
 			.then(data => {
 				title = data.lead.displaytitle
 				let html = data.lead.sections[0].text
-				html = html.replace(/<style.*>.*<\/style>/ig, '')
-				const text = striptags(html);
-				// &amp;, &lt;, &gt;, &quot;, and &#39;
-				wiki = text
-					.replace(/&nbsp;/g, ' ')
-					.replace(/&(?:amp);/g, '&')
-					.replace(/&(?:lt);/g, '<')
-					.replace(/&(?:gt);/g, '>')
-					.replace(/&(?:quot);/g, '"')
-					.replace(/&(?:#39);/g, "'")
-				// strip citations
-				wiki = wiki.replace(/\[\d+\]/ig, '')
+				let text = getText(html)
+				wiki += getText(html)
+				wikiSections.push({
+					text: text,
+					headline: data.lead.displaytitle
+				})
+				let i = 0;
+				while(wiki.length < 15000 && i < data.remaining.sections.length) {
+					html = data.remaining.sections[i].text
+					text = getText(html)
+					wiki += getText(html)
+					wikiSections.push({
+						text: text,
+						headline: data.remaining.sections[i].line
+					})
+					i++
+				}
 				renderTokens()
 			})
+	}
+
+	function getText(html) {
+		let text = html.replace(/<style.*>.*<\/style>/ig, '')
+		text = striptags(text);
+		// &amp;, &lt;, &gt;, &quot;, and &#39;
+		text = text
+			.replace(/&nbsp;/g, ' ')
+			.replace(/&(?:amp);/g, '&')
+			.replace(/&(?:lt);/g, '<')
+			.replace(/&(?:gt);/g, '>')
+			.replace(/&(?:quot);/g, '"')
+			.replace(/&(?:#39);/g, "'")
+		// strip citations
+		text = text.replace(/\[\d+\]/ig, '')
+		return text
 	}
 	
 	getArticle()
@@ -48,19 +72,38 @@
 	function renderTokens() {
 		console.log('rendering...')
 
-		let titleMatches = [...title.matchAll(regex)]
-		titleTokens = getTokens(titleMatches)
-		
+		sections = []
+
+		for(const i in wikiSections) {
+			addSection(wikiSections[i].headline, true)
+			if(i == 0) {
+				// check if the title (first headline of first section) has any redactions.
+				solved = isSolved()
+			}
+			addSection(wikiSections[i].text, false)
+		}
+
+		loading=false
+	}
+
+	function isSolved(){ 		
 		let isSolved = true
-		for(const i in titleTokens) {
-			if(titleTokens[i].redacted) {
+		for(const i in sections[0].tokens) {
+			if(sections[0].tokens[i].redacted) {
 				isSolved=false
 			}
 		}
-		solved = isSolved
-		
-		let contentMatches = [...wiki.matchAll(regex)]
-		contentTokens = getTokens(contentMatches)
+		return isSolved
+		console.log(`solved: ${solved}`)
+	}
+
+	function addSection(text, isHeadline) {
+		let matches = [...text.matchAll(regex)]
+		let tokens = getTokens(matches)
+		sections.push({
+			headline: isHeadline,
+			tokens: tokens
+		})
 	}
 	
 	function getTokens(matches) {
@@ -89,12 +132,18 @@
 	}
 	
 	function selectWord(event) {
-		console.log(event)
 		selectedWord = event.word
 		renderTokens()
 	}
 	
 	function handleSubmit() {
+		const wordRegex = /(\W)+/i
+		// don't allow non-word guesses
+		// if (!wordRegex.test(selectedWord)) {
+		// 	guess = ''
+		// 	console.log('invalid guess')
+		// 	return
+		// }
 		selectedWord=guess.toLowerCase()
 		if(selectedWord == 'togglecheats') {
 			solved = !solved
@@ -109,24 +158,32 @@
 <div id="redactle">
 	<div id="main">
 		<h1>Redactle</h1>
+			{#if loading}
+			<p>loading...</p>
+			{/if}
 			{#if solved}
-					<p>Solved in {Object.keys(guesses).length} guesses!</p>
+				<p>Solved in {Object.keys(guesses).length} guesses!</p>
 			{/if}
 		<article>
-			<h2>
-				{#each titleTokens as token}
-					<Span value={token.value} redacted={token.redacted} highlight={token.highlight || false}></Span>
-				{/each}
-			</h2>
-			<p>
-				{#each contentTokens as token}
-					<Span value={token.value} redacted={token.redacted} highlight={token.highlight || false}></Span>
-				{/each}
-			</p>
+			{#each sections as section}
+				{#if section.headline}
+					<h2>
+					{#each section.tokens as token}
+						<Span value={token.value} redacted={token.redacted} highlight={token.highlight || false}></Span>
+					{/each}
+					</h2>
+				{:else}
+					<p>
+					{#each section.tokens as token}
+						<Span value={token.value} redacted={token.redacted} highlight={token.highlight || false}></Span>
+					{/each}
+					</p>
+				{/if}
+			{/each}
 		</article>
 	</div>
 
-	<guesses>
+	<div id="guesses">
 		<h3>
 			Guesses
 		</h3>
@@ -134,18 +191,21 @@
 		<form on:submit|preventDefault={handleSubmit}>
 			<input bind:value={guess} placeholder="guess a word...">
 		</form>
-	</div>
-		<guesses>
-			{#each Object.keys(guesses).reverse() as word, i}
-			<span on:click={selectWord({word})} class="{selectedWord==word ? 'highlight word' : 'word'}"><b>{word}</b> ({guesses[word]})</span> 
-			{/each}
-		</guesses>
-	</guesses>
+		</div>
+			<guess-list>
+				{#each Object.keys(guesses).reverse() as word, i}
+				<span on:click={selectWord({word})} class="{selectedWord==word ? 'highlight word' : 'word'}"><b>{word}</b> ({guesses[word]})</span> 
+				{/each}
+			</guess-list>
+		</div>
 	</div>
 <style>
 	#redactle {
+		font-family:Arial, Helvetica, sans-serif;
 		display:flex;
 		height:100%;
+		width:100%;
+		position: relative;
 	}
 	#main {
 		height:100%;
@@ -156,15 +216,20 @@
 		padding:1em;
 		height:100%;
 		overflow:auto;
+		min-width: 30em;
 	}
-	article h2, article p {
+	article h2, article p, guess-list .word {
 		font-family:SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace
 	}
-	guesses {
+	#guesses {
 		height:100%;
+		display: block;
+		width:100%;
 	}
-	guesses .word {
+	guess-list .word {
 		margin:0 0 0 1em;
+		display: block;
+		float: left;
 	}
 	.highlight {
 		background-color: #66eeff;
