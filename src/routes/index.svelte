@@ -185,7 +185,7 @@ import { get_all_dirty_from_scope } from 'svelte/internal'
 </script>
 <div id="main">
 	<nav>
-		<h1>Redactle</h1>
+		<h1>Redact▀█▄le</h1>
 		<p class="info">A puzzle game to guess the title of a random Wikipedia article by revealing the words from the article. 
 			Similar to redactle.com but without the daily game limit.</p>
 	</nav>
@@ -264,7 +264,7 @@ import { get_all_dirty_from_scope } from 'svelte/internal'
 
 	nav {
 		grid-column: 1/-1;
-		background-color: black;
+		background-color: rgb(38, 38, 38);
 		border-bottom: 1px solid #6e6e0f;
 		padding: .5em;
 	}
@@ -286,6 +286,9 @@ import { get_all_dirty_from_scope } from 'svelte/internal'
 
 	nav h1 {
 		margin:0;
+		color:black;
+        background-color: #66eeff;
+		display: inline;
 	}
 	#article h2, #article p, guess-list .word {
 		font-family:SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace
@@ -300,8 +303,5 @@ import { get_all_dirty_from_scope } from 'svelte/internal'
 		display: block;
 		float: left;
 		
-	}
-	.highlight {
-		background-color: #66eeff;
 	}
 </style>
