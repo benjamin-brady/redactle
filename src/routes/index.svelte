@@ -239,7 +239,7 @@ import { get_all_dirty_from_scope } from 'svelte/internal'
 
 	#main {
 		display: grid;
-		grid-template-rows: 120px 1fr;
+		grid-template-rows: 90px 1fr;
 		grid-template-columns: 8fr 2fr;
 		font-family:Arial, Helvetica, sans-serif;
 		height: 100%;
@@ -248,6 +248,7 @@ import { get_all_dirty_from_scope } from 'svelte/internal'
 		margin: 0;
 		padding: 0;
 		color: #b6b6b6;
+		font-size:1.1em;
 	}
 
 	@media (max-device-width: 960px) {
