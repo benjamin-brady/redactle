@@ -1,7 +1,7 @@
 <script>
 import Span from './../components/Span.svelte'
 import striptags from 'striptags'
-import { get_all_dirty_from_scope } from 'svelte/internal'
+import { get_all_dirty_from_scope, loop_guard } from 'svelte/internal'
 
 let wikiSections = []
 let guesses = {}
@@ -136,13 +136,20 @@ function selectWord(word) {
 		selectedWordIndex = selectedWordIndex % wordCount[word]
 	}
 	selectedWord = word
-	const wordId = getWordId(selectedWord, selectedWordIndex);
+	const wordId = getWordId(selectedWord, selectedWordIndex)
 	let element = document.getElementById(wordId)
 	console.log(`scroll to ${wordId}`)
 	if(element) {
 		element.scrollIntoView();
 	}
 	renderTokens()
+}
+function backToTop() {
+	console.log('top')
+	let element = document.getElementById('headline-section-0')
+	if(element) {
+		element.scrollIntoView()
+	}
 }
 function getWordId(word, wordIndex) {
 	let id = `${base64encode(word).replaceAll('=','a')}${wordIndex}`
@@ -191,9 +198,9 @@ function base64decode(str) {
 	{#if solved}
 		<p>Solved in {Object.keys(guesses).length} guesses!</p>
 	{/if}
-	{#each sections as section}
+	{#each sections as section, i}
 		{#if section.headline}
-			<h2>
+			<h2 id="headline-section-{i}">
 			{#each section.tokens as token}
 				<Span id={token.id} value={token.value} redacted={token.redacted} highlight={token.highlight || false}></Span>
 			{/each}
@@ -213,11 +220,13 @@ function base64decode(str) {
 		Guesses
 	</h3>
 	<form id="guess-form" on:submit|preventDefault={handleSubmit}>
+		<button id="btn-top" type="button" on:click={() => backToTop()}>▲ Top</button>
 		<input id="input-guess" bind:value={guess} placeholder="guess a word...">
+		<input id="submit" type="submit" value="Guess" />
 	</form>
 	<guess-list>
 		{#each Object.keys(guesses).reverse() as word, i}
-		<span on:click={selectWord(word)} class="{selectedWord==word ? 'highlight word' : 'word'}"><b>{word}</b>({guesses[word]})</span> 
+		<span on:click={selectWord(word)} class="{(selectedWord==word ? 'highlight' : '') + (guesses[word] > 0 ? ' hit' : ' miss') + ' word'}"><b>{word}</b>({guesses[word]})</span> 
 		{/each}
 	</guess-list>
 	</div>
@@ -233,7 +242,7 @@ function base64decode(str) {
 	#main {
 		display: grid;
 		grid-template-rows: 90px 1fr;
-		grid-template-columns: 8fr 2fr;
+		grid-template-columns: 8fr 3fr;
 		font-family:Arial, Helvetica, sans-serif;
 		height: 100%;
 		position: absolute;
@@ -246,10 +255,15 @@ function base64decode(str) {
 	}
 
 	#article {
-		padding: 0 5% 0 10%;
+		padding: 0 1em 0 5%;
 		height:100%;
 		overflow-y:scroll;
 	}
+
+	#article p, #article h2 {
+		 max-width: 100em;
+	}
+
 	#guesses {
 		padding:.5em;
 		background: black;
@@ -307,18 +321,36 @@ function base64decode(str) {
 	#guesses h3 {
 		margin:0;
 	}
+	#guess-form input, #guess-form button {
+		background: rgb(133, 133, 133);
+		margin:0;
+		padding:.3em;
+	}
+
+	#guess-form input:first-child, #guess-form button:first-child {
+		border-top-left-radius: 5px;
+		border-bottom-left-radius: 5px;
+	}
+
+	#guess-form input:last-child, #guess-form button:last-child {
+		border-top-right-radius: 5px;
+		border-bottom-right-radius: 5px;
+	}
+
+
+	input, button, submit { border:none; }
 	#guess-form {
 		display: flex;
 		justify-content: center;
 		width: 100%;
+		font-size:1.1em;
 	}
 	#guesses #input-guess {
-		font-size:1.3em;
 		background-color: #333;
 		color:white;
 		width: 80%;
-		padding:.5em;
-		border-radius: 5px;
+		padding:.3em;
+		border-radius: 0px;
 	}
 
 	guess-list .word {
@@ -327,4 +359,11 @@ function base64decode(str) {
 		float: left;
 		
 	}
+	guess-list .word.miss {
+		color:#555;
+	}	
+	.highlight{
+        background-color: #c1c1c1;
+        color: #333;
+    }
 </style>
