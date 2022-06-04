@@ -9,6 +9,7 @@
     
     <style>
     .highlight{
-        background-color: #66eeff;
+        background-color: #00fff2;
+        color: #0f0f0f;
     }
 </style>

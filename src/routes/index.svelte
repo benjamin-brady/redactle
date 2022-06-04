@@ -218,7 +218,7 @@ import { get_all_dirty_from_scope } from 'svelte/internal'
 		</h3>
 		<div id="guess-form">
 			<form on:submit|preventDefault={handleSubmit}>
-				<input bind:value={guess} placeholder="guess a word...">
+				<input id="input-guess" bind:value={guess} placeholder="guess a word...">
 			</form>
 		</div>
 			<guess-list>
@@ -259,6 +259,10 @@ import { get_all_dirty_from_scope } from 'svelte/internal'
 		#main .info {
 			display: none;
 		}
+
+		#guesses h3 {
+			display: none;
+		}
 	}
 
 	nav {
@@ -295,8 +299,19 @@ import { get_all_dirty_from_scope } from 'svelte/internal'
 
 	#guesses {
 		overflow-y:scroll;
+		border-top: 1px solid #686868;
 	}
 	
+	#guesses h3 {
+		margin:0;
+	}
+	
+	#guesses #input-guess {
+		font-size:1.5em;
+		background-color: #333;
+		color:white;
+	}
+
 	guess-list .word {
 		margin:0 0 0 1em;
 		display: block;
