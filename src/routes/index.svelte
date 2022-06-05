@@ -136,7 +136,6 @@ function getTokens(matches) {
 				id: getWordId(wordLower, wordCount[wordLower]-1),
 				redacted:
 					!solved
-					&& wordLower.length > 2
 					&& !commonWordsDict.hasOwnProperty(wordLower) 
 					&& !guesses.hasOwnProperty(wordLower),
 				highlight: wordLower == selectedWord,
