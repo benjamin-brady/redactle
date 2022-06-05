@@ -57,7 +57,8 @@ function getArticle() {
 		})
 }
 function getText(html) {
-	let text = html.replace(/<style.*>.*<\/style>/ig, '')
+	let text = html.replace(/(<style.*>.*<\/style>|<table.*>.*<\/table>)/ig, '')
+	text = text.replace(/(<\/li>)/, ' </li>')
 	text = striptags(text);
 	// &amp;, &lt;, &gt;, &quot;, and &#39;
 	text = text
@@ -278,7 +279,9 @@ function base64decode(str) {
 	#article {
 		padding: 0 1em 0 5%;
 		height:100%;
+		width:99%;
 		overflow-y:scroll;
+		overflow-x:hidden;
 	}
 
 	#article p, #article h2 {
