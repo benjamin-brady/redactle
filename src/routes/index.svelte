@@ -156,7 +156,7 @@ function shouldRedact(wordLower) {
 			&& !commonWordsDict.hasOwnProperty(wordLower) 
 			&& !guesses.hasOwnProperty(wordLower);
 }
-function selectWord(word) {
+function selectWord(word, scrollTo) {
 	selectedWordIndex = selectedWord == word ? selectedWordIndex+1 : 0
 	// loop back to top once all words have been selected
 	if(word in wordCount && wordCount[word] > 0) {
@@ -176,7 +176,7 @@ function selectWord(word) {
 	// select new word
 	const wordId = getWordId(selectedWord, selectedWordIndex)
 	let element = document.getElementById(wordId)
-	if(element) {
+	if(element && scrollTo) {
 		element.scrollIntoView();
 	}
 	reRenderWord(word)
@@ -200,7 +200,7 @@ function handleSubmit() {
 	}
 	guesses[word] = wordCount[word] || 0
 
-	selectWord(word)
+	selectWord(word, false)
 	guess = ''
 	checkSolved()
 	if(word == 'togglecheats') {
@@ -267,7 +267,7 @@ function base64decode(str) {
 	<guess-list>
 		{#each Object.keys(guesses).reverse() as word, i}
 		{#if showMisses || guesses[word] > 0 || i == 0}
-		<span on:click={selectWord(word)} class="{(selectedWord==word ? 'highlight' : '') + (guesses[word] > 0 ? ' hit' : ' miss') + ' word'}"><b>{word}</b>({guesses[word]})</span> 
+		<span on:click={selectWord(word, true)} class="{(selectedWord==word ? 'highlight' : '') + (guesses[word] > 0 ? ' hit' : ' miss') + ' word'}"><b>{word}</b>({guesses[word]})</span> 
 		{/if}
 		{/each}
 	</guess-list>
