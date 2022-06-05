@@ -279,7 +279,6 @@ function base64decode(str) {
 	#article {
 		padding: 0 1em 0 5%;
 		height:100%;
-		width:99%;
 		overflow-y:scroll;
 		overflow-x:hidden;
 	}
