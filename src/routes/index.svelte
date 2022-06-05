@@ -121,19 +121,19 @@ function getTokens(matches) {
 	for(const i in matches) {
 		let word = matches[i][1]
 		if (word) {
-			let wordLower = word.toLowerCase();
-			wordCount[wordLower] = wordLower in wordCount ? wordCount[wordLower] + 1 : 1
+			let wordNormal = normalize(word);
+			wordCount[wordNormal] = wordNormal in wordCount ? wordCount[wordNormal] + 1 : 1
 			let token = {
 				value: word,
-				wordLower: wordLower,
-				id: getWordId(wordLower, wordCount[wordLower]-1),
-				redacted:shouldRedact(wordLower),
-				highlight: wordLower == selectedWord,
+				wordNormal: wordNormal,
+				id: getWordId(wordNormal, wordCount[wordNormal]-1),
+				redacted:shouldRedact(wordNormal),
+				highlight: wordNormal == selectedWord,
 			}
-			if(!(wordLower in tokenLookup)) {
-				tokenLookup[wordLower]=[]
+			if(!(wordNormal in tokenLookup)) {
+				tokenLookup[wordNormal]=[]
 			}
-			tokenLookup[wordLower].push(token)
+			tokenLookup[wordNormal].push(token)
 			tokens.push(token)
 		}
 		if(matches[i][2]) {
@@ -142,19 +142,19 @@ function getTokens(matches) {
 	}
 	return tokens
 }
-function reRenderWord(wordLower) {
-	if(!tokenLookup.hasOwnProperty(wordLower)) return
-	tokenLookup[wordLower].forEach(token => {
-		token.redacted = shouldRedact(wordLower)
-		token.highlight = wordLower == selectedWord
+function reRenderWord(wordNormal) {
+	if(!tokenLookup.hasOwnProperty(wordNormal)) return
+	tokenLookup[wordNormal].forEach(token => {
+		token.redacted = shouldRedact(wordNormal)
+		token.highlight = wordNormal == selectedWord
 	});
 	// trigger svelte update
 	sections = [...sections]
 }
-function shouldRedact(wordLower) {
+function shouldRedact(wordNormal) {
 	return !solved
-			&& !commonWordsDict.hasOwnProperty(wordLower) 
-			&& !guesses.hasOwnProperty(wordLower);
+			&& !commonWordsDict.hasOwnProperty(wordNormal) 
+			&& !guesses.hasOwnProperty(wordNormal);
 }
 function selectWord(word, scrollTo) {
 	selectedWordIndex = selectedWord == word ? selectedWordIndex+1 : 0
@@ -192,7 +192,7 @@ function getWordId(word, wordIndex) {
 	return id
 }
 function handleSubmit() {
-	let word=guess.toLowerCase()
+	let word=normalize(guess)
 	if (!validateGuess(word)) {
 		console.log('invalid guess')
 		guess = ''
@@ -220,6 +220,10 @@ function base64encode(str) {
 function base64decode(str) {
 	let decode = atob(str).replace(/[\x80-\uffff]/g, (m) => `%${m.charCodeAt(0).toString(16).padStart(2, '0')}`)
 	return decodeURIComponent(decode)
+}
+function normalize(str) {
+	// removes accents from string
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
 </script>
 
