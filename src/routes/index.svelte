@@ -162,10 +162,16 @@ function selectWord(word) {
 	if(word in wordCount && wordCount[word] > 0) {
 		selectedWordIndex = selectedWordIndex % wordCount[word]
 	}
-	// unselect previous selection
-	const oldWord = selectWord;
+
 	selectedWord = word
-	reRenderWord(oldWord)
+
+	sections.forEach(section => {
+		section.tokens
+		.filter(t => t.highlight == true)
+		.forEach(token => {
+			token.highlight = false
+		})
+	})
 
 	// select new word
 	const wordId = getWordId(selectedWord, selectedWordIndex)
