@@ -20,12 +20,13 @@ let selectedWord = ''
 let selectedWordIndex = 0
 let wordCount = {}
 let loading = true
+let urlTitle = ''
 
 getArticle()
 
 function getArticle() {
 	const rand = Math.floor(Math.random() * titles.length);
-	let urlTitle = base64decode(titles[rand])
+	urlTitle = base64decode(titles[rand])
 
 	// Fetch from wikimedia rest api e.g. https://en.wikipedia.org/api/rest_v1/page/mobile-sections/Australia_%28continent%29
 	fetch(`https://en.wikipedia.org/api/rest_v1/page/mobile-sections/${urlTitle}`)
@@ -92,9 +93,28 @@ function isSolved(){
 			isSolved=false
 		}
 	}
+	if(solved) {
+		updateLocalstorage()
+	}
 	return isSolved
+}
+const storageKey = 'solved_game_history'
+function updateLocalstorage() {
+	let history = getHistory()
+	let date = new Date()
+	let item = {
+		title: urlTitle,
+		guesses: Object.keys(guesses).length,
+		time: date.getTime()
+	}
+	history[urlTitle] = item
+	window.localStorage.setItem(storageKey, JSON.stringify(history))
 	console.log(`solved: ${solved}`)
 }
+function getHistory() {
+	return JSON.parse(window.localStorage.getItem(storageKey) || '{}')
+}
+
 function addSection(text, isHeadline) {
 	let matches = [...text.matchAll(regex)]
 	let tokens = getTokens(matches)
@@ -138,14 +158,12 @@ function selectWord(word) {
 	selectedWord = word
 	const wordId = getWordId(selectedWord, selectedWordIndex)
 	let element = document.getElementById(wordId)
-	console.log(`scroll to ${wordId}`)
 	if(element) {
 		element.scrollIntoView();
 	}
 	renderTokens()
 }
 function backToTop() {
-	console.log('top')
 	let element = document.getElementById('headline-section-0')
 	if(element) {
 		element.scrollIntoView()
@@ -187,7 +205,7 @@ function base64decode(str) {
 </script>
 <div id="main">
 <nav>
-	<h1>Redactle</h1>
+	<h1>Redactle Unlimited</h1>
 	<p class="info">A puzzle game to guess the title of a random Wikipedia article by revealing the words from the article. 
 		Similar to redactle.com but without the daily game limit.</p>
 </nav>
@@ -217,11 +235,11 @@ function base64decode(str) {
 
 <div id="guesses">
 	<h3>
-		Guesses
+		Guesses ({Object.keys(guesses).length})
 	</h3>
 	<form id="guess-form" on:submit|preventDefault={handleSubmit}>
 		<button id="btn-top" type="button" on:click={() => backToTop()}>▲ Top</button>
-		<input id="input-guess" bind:value={guess} placeholder="guess a word...">
+		<input id="input-guess" bind:value={guess} placeholder="guess a word..." autocomplete="off"/>
 		<input id="submit" type="submit" value="Guess" />
 	</form>
 	<guess-list>
@@ -268,8 +286,11 @@ function base64decode(str) {
 		padding:.5em;
 		background: black;
 		color: #b6b6b6;
+		display: flex;
+		flex-direction: column;
+		overflow-y:scroll;
+		border-top: 1px solid #686868;
 	}
-
 
 	@media (max-device-width: 960px) {
 		#main {
@@ -280,6 +301,11 @@ function base64decode(str) {
 		}
 		#main .info {
 			display: none;
+		}
+
+		#guesses {
+			flex-direction: column-reverse;
+			justify-content: space-between;
 		}
 
 		#guesses h3 {
@@ -312,14 +338,9 @@ function base64decode(str) {
 		font-family:Consolas,monospace;
 		line-height: 1.5;
 	}
-
-	#guesses {
-		overflow-y:scroll;
-		border-top: 1px solid #686868;
-	}
 	
 	#guesses h3 {
-		margin:0;
+		margin:.3em 0;
 	}
 	#guess-form input, #guess-form button {
 		background: rgb(133, 133, 133);
@@ -345,6 +366,10 @@ function base64decode(str) {
 		width: 100%;
 		font-size:1.1em;
 	}
+	#guess-form button:hover, #guess-form input[type=submit]:hover {
+		cursor: pointer;
+		background: #c1c1c1;
+	}
 	#guesses #input-guess {
 		background-color: #333;
 		color:white;
@@ -357,6 +382,7 @@ function base64decode(str) {
 		margin:0 0 0 1em;
 		display: block;
 		float: left;
+		cursor: pointer;
 		
 	}
 	guess-list .word.miss {
