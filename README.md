@@ -1,4 +1,4 @@
-# Redactle
+# Redactle Unlimited
 
 Play here: https://benjamin-brady.github.io/redactle/
 
