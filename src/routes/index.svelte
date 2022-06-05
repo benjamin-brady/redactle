@@ -42,7 +42,7 @@ function getArticle() {
 				headline: data.lead.displaytitle
 			})
 			let i = 0;
-			while(count < 15000 && i < data.remaining.sections.length) {
+			while(count < 100000 && i < data.remaining.sections.length) {
 				html = data.remaining.sections[i].text
 				text = getText(html)
 				count += text.length
