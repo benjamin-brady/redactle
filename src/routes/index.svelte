@@ -1,7 +1,7 @@
 <script>
 import Span from './../components/Span.svelte'
 import striptags from 'striptags'
-import { get_all_dirty_from_scope, loop_guard } from 'svelte/internal'
+import { element_is, get_all_dirty_from_scope, loop_guard } from 'svelte/internal'
 
 let wikiSections = []
 let guesses = {}
@@ -55,9 +55,19 @@ function getArticle() {
 		})
 }
 function getText(html) {
-	let text = html.replace(/(<style.*>.*<\/style>|<table.*>.*<\/table>)/ig, '')
-	text = text.replace(/(<\/li>)/, ' </li>')
-	text = striptags(text);
+	 if (typeof window !== "undefined") {
+	 	console.log('removing tags')
+	 	var parser = new window.DOMParser();
+	 	var htmlDoc = parser.parseFromString(html, 'text/html');
+	 	const removeTags = ['style', 'table']
+	 	removeTags.forEach(tag => {
+			let nodeList = htmlDoc.getElementsByTagName(tag)
+			let nodes = Array.prototype.slice.call(nodeList,0); 
+			nodes.forEach(node => node.remove())
+		})
+		html = htmlDoc.body.innerHTML
+	 }
+	let text = striptags(html);
 	// &amp;, &lt;, &gt;, &quot;, and &#39;
 	text = text
 		.replace(/&nbsp;/g, ' ')
