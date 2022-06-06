@@ -322,7 +322,7 @@ function normalize(str) {
 	}
 
 	#guesses {
-		padding:.5em;
+		padding:0 .5em;
 		background: black;
 		color: #b6b6b6;
 		display: flex;
@@ -402,7 +402,8 @@ function normalize(str) {
 		display: flex;
 		justify-content: center;
 		width: 100%;
-		font-size:1.1em;
+		font-size:16px !important;
+		margin:5px 0;
 	}
 	#guess-form button:hover, #guess-form input[type=submit]:hover {
 		cursor: pointer;
@@ -414,6 +415,7 @@ function normalize(str) {
 		width: 80%;
 		padding:.3em;
 		border-radius: 0px;
+		font-size: 16px !important;
 	}
 
 	guess-list {
