@@ -32,13 +32,12 @@ function getArticle() {
 		.then(response => response.json())
 		.then(data => {
 			let count = 0
-			let title = data.lead.displaytitle
 			let html = data.lead.sections[0].text
 			let text = getText(html)
 			count += text.length
 			wikiSections.push({
 				text: text,
-				headline: data.lead.displaytitle
+				headline: striptags(data.lead.displaytitle)
 			})
 			let i = 0;
 			while(count < 100000 && i < data.remaining.sections.length) {
@@ -47,7 +46,7 @@ function getArticle() {
 				count += text.length
 				wikiSections.push({
 					text: text,
-					headline: data.remaining.sections[i].line
+					headline: striptags(data.remaining.sections[i].line)
 				})
 				i++
 			}
