@@ -351,7 +351,7 @@ function normalize(str) {
 		}
 
 		#article {
-			padding:.5em;
+			padding:0 .5em;
 		}
 	}
 
@@ -420,10 +420,11 @@ function normalize(str) {
 
 	guess-list {
 		overflow-y: scroll;
+		margin:5px 0;
 	}
 
 	guess-list .word {
-		margin:0 0 0 1em;
+		margin:0 1em 0 0;
 		display: block;
 		float: left;
 		cursor: pointer;
