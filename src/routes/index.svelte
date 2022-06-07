@@ -2,6 +2,7 @@
 import Span from './../components/Span.svelte'
 import striptags from 'striptags'
 import { element_is, get_all_dirty_from_scope, loop_guard } from 'svelte/internal'
+import * as animateScroll from "svelte-scrollto";
 
 let wikiSections = []
 let guesses = {}
@@ -171,7 +172,7 @@ function selectWord(word, scrollTo) {
 	if(word in wordCount && wordCount[word] > 0) {
 		selectedWordIndex = selectedWordIndex % wordCount[word]
 	}
-
+	let isLoopBack = selectedWord == word && selectedWordIndex == 0
 	selectedWord = word
 
 	sections.forEach(section => {
@@ -186,7 +187,12 @@ function selectWord(word, scrollTo) {
 	const wordId = getWordId(selectedWord, selectedWordIndex)
 	let element = document.getElementById(wordId)
 	if(element && scrollTo) {
-		element.scrollIntoView();
+		animateScroll.scrollTo({
+			container: '#article', 
+			element: `#${wordId}`, 
+			duration: isLoopBack ? 500 : 150, 
+			offset: -25
+		})
 	}
 	reRenderWord(word)
 }
