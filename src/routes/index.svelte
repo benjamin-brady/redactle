@@ -37,7 +37,7 @@ getArticle()
 function getArticle() {
 	const rand = Math.floor(Math.random() * titles.length);
 	urlTitle = base64decode(titles[rand])
-	urlTitle='Jellyfish'
+
 	// Fetch from wikimedia rest api e.g. https://en.wikipedia.org/api/rest_v1/page/mobile-sections/Australia_%28continent%29
 	fetch(`https://en.wikipedia.org/api/rest_v1/page/mobile-sections/${urlTitle}`)
 		.then(response => response.json())
