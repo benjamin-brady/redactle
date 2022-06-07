@@ -56,7 +56,6 @@ function getArticle() {
 }
 function getText(html) {
 	 if (typeof window !== "undefined") {
-	 	console.log('removing tags')
 	 	var parser = new window.DOMParser();
 	 	var htmlDoc = parser.parseFromString(html, 'text/html');
 	 	const removeTags = ['style', 'table']
