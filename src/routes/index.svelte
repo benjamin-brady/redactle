@@ -283,13 +283,13 @@ function normalize(str) {
 		<input id="input-guess" bind:value={guess} placeholder="guess a word..." autocomplete="off"/>
 		<input id="submit" type="submit" value="Guess" />
 	</form>
-	<guess-list>
+	<div id="guess-list">
 		{#each Object.keys(guesses).reverse() as word, i}
 		{#if showMisses || guesses[word] > 0 || i == 0}
 		<span on:click={selectWord(word, true)} class="{(selectedWord==word ? 'highlight' : '') + (guesses[word] > 0 ? ' hit' : ' miss') + ' word'}"><b>{word}</b>({guesses[word]})</span> 
 		{/if}
 		{/each}
-	</guess-list>
+	</div>
 	</div>
 </div>
 <style>
@@ -428,19 +428,22 @@ function normalize(str) {
 		font-size: 16px !important;
 	}
 
-	guess-list {
+	#guess-list {
 		overflow-y: scroll;
 		margin:5px 0;
 	}
+	#guess-list::-webkit-scrollbar {
+		display: none;
+	}
 
-	guess-list .word {
+	#guess-list .word {
 		margin:0 1em 0 0;
 		display: block;
 		float: left;
 		cursor: pointer;
 		
 	}
-	guess-list .word.miss {
+	#guess-list .word.miss {
 		color:#555;
 	}	
 	.highlight{
