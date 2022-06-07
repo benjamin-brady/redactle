@@ -106,14 +106,13 @@ function checkSolved(){
 	solved = titleRedaction === undefined
 	if(solved) {
 		updateLocalstorage()
-		trackEvent('win_game')
+		trackEvent('win_game', {title: urlTitle})
 		renderTokens()
 	}
 }
-function trackEvent(eventName) {
+function trackEvent(eventName, props) {
 	try {
-		console.log(`track ${eventName}`)
-		gtag('event', eventName, {});
+		gtag('event', eventName, props);
 	} catch(error) {
 		console.log(error)
 	}
@@ -240,7 +239,7 @@ function handleSubmit() {
 		solved = !solved
 		renderTokens()
 	}
-	trackEvent('guess')
+	trackEvent('guess', {word:word})
 }
 function validateGuess(str) {
 	if(str in commonWordsDict) return false
