@@ -23,6 +23,15 @@ let wordCount = {}
 let loading = true
 let urlTitle = ''
 
+if (typeof window !== "undefined") {
+	window.onbeforeunload = function(e) {
+	if(Object.keys(guesses).length > 0) {
+		return 'Are you sure you want to leave? You are in the middle of a game.'
+	}
+	return null
+	}
+}
+
 getArticle()
 
 function getArticle() {
