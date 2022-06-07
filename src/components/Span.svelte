@@ -20,7 +20,7 @@
     }
     .redacted, .char_count {
 		background-color: #989898;
-        cursor: help;
+        cursor: pointer;
 	}
     .char_count {
         color:#333;
