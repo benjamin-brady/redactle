@@ -37,10 +37,12 @@ getArticle()
 function getArticle() {
 	const rand = Math.floor(Math.random() * titles.length);
 	urlTitle = base64decode(titles[rand])
+	urlTitle='Jellyfish'
 	// Fetch from wikimedia rest api e.g. https://en.wikipedia.org/api/rest_v1/page/mobile-sections/Australia_%28continent%29
 	fetch(`https://en.wikipedia.org/api/rest_v1/page/mobile-sections/${urlTitle}`)
 		.then(response => response.json())
 		.then(data => {
+			console.log(data)
 			let count = 0
 			let html = data.lead.sections[0].text
 			let text = getText(html)
@@ -67,9 +69,17 @@ function getText(html) {
 	 if (typeof window !== "undefined") {
 	 	var parser = new window.DOMParser();
 	 	var htmlDoc = parser.parseFromString(html, 'text/html');
-	 	const removeTags = ['style', 'table']
-	 	removeTags.forEach(tag => {
+
+		// Remove notes, tables, images, captions etc
+	 	const tagsToRemove = ['style', 'table', 'figure']
+	 	tagsToRemove.forEach(tag => {
 			let nodeList = htmlDoc.getElementsByTagName(tag)
+			let nodes = Array.prototype.slice.call(nodeList,0); 
+			nodes.forEach(node => node.remove())
+		})
+		const classesToRemove = ['navigation-not-searchable', 'thumbinner', 'gallery', 'infobox', 'hatnote','thumb']
+		classesToRemove.forEach(className => {
+			let nodeList = htmlDoc.getElementsByClassName(className)
 			let nodes = Array.prototype.slice.call(nodeList,0); 
 			nodes.forEach(node => node.remove())
 		})
