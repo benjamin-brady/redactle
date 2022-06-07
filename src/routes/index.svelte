@@ -97,7 +97,16 @@ function checkSolved(){
 	solved = titleRedaction === undefined
 	if(solved) {
 		updateLocalstorage()
+		trackEvent('win_game')
 		renderTokens()
+	}
+}
+function trackEvent(eventName) {
+	try {
+		console.log(`track ${eventName}`)
+		gtag('event', eventName, {});
+	} catch(error) {
+		console.log(error)
 	}
 }
 const storageKey = 'solved_game_history'
@@ -222,6 +231,7 @@ function handleSubmit() {
 		solved = !solved
 		renderTokens()
 	}
+	trackEvent('guess')
 }
 function validateGuess(str) {
 	if(str in commonWordsDict) return false
