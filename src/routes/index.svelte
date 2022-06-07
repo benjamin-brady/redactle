@@ -169,9 +169,10 @@ function shouldRedact(wordNormal) {
 function selectWord(word, scrollTo) {
 	selectedWordIndex = selectedWord == word ? selectedWordIndex+1 : 0
 	// loop back to top once all words have been selected
-	if(word in wordCount && wordCount[word] > 0) {
-		selectedWordIndex = selectedWordIndex % wordCount[word]
+	if(!wordCount.hasOwnProperty(word)) {
+		return
 	}
+	selectedWordIndex = selectedWordIndex % wordCount[word]
 	let isLoopBack = selectedWord == word && selectedWordIndex == 0
 	selectedWord = word
 
@@ -382,9 +383,11 @@ function normalize(str) {
         background-color: #c7a002;
 		display: inline;
 	}
-	#article h2, #article p, guess-list .word {
+	#article h2, #article p, #guess-list .word {
 		font-family:Consolas,monospace;
 		line-height: 1.5;
+		padding:0 3px;
+		border-radius: 3px;
 	}
 	
 	#guesses h3 {
@@ -440,8 +443,9 @@ function normalize(str) {
 		margin:0 1em 0 0;
 		display: block;
 		float: left;
+	}
+	#guess-list .word.hit {
 		cursor: pointer;
-		
 	}
 	#guess-list .word.miss {
 		color:#555;
