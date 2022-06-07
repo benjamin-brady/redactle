@@ -317,6 +317,10 @@ function normalize(str) {
 		overflow-x:hidden;
 	}
 
+	#article::-webkit-scrollbar {
+  		display: none;
+	}
+
 	#article p, #article h2 {
 		 max-width: 100em;
 	}
