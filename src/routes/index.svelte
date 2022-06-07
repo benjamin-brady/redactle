@@ -42,7 +42,6 @@ function getArticle() {
 	fetch(`https://en.wikipedia.org/api/rest_v1/page/mobile-sections/${urlTitle}`)
 		.then(response => response.json())
 		.then(data => {
-			console.log(data)
 			let count = 0
 			let html = data.lead.sections[0].text
 			let text = getText(html)
