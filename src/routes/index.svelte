@@ -498,6 +498,7 @@ function normalize(str) {
 		margin:0 1em 0 0;
 		display: block;
 		float: left;
+		user-select: none;
 	}
 	#guess-list .word.hit {
 		cursor: pointer;
