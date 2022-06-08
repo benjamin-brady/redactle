@@ -472,6 +472,7 @@ function normalize(str) {
 		width: 100%;
 		font-size:16px !important;
 		margin:5px 0;
+		user-select: none;
 	}
 	#guess-form button:hover, #guess-form input[type=submit]:hover {
 		cursor: pointer;
