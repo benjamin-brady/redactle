@@ -4,9 +4,9 @@ import striptags from 'striptags'
 import { element_is, get_all_dirty_from_scope, loop_guard } from 'svelte/internal'
 import * as animateScroll from "svelte-scrollto";
 
+let gameState = {}
+
 let wikiSections = []
-let guesses = {}
-let solved = false
 let regex = /([\u00BF-\u1FFF\u2C00-\uD7FF\w]+)([^\u00BF-\u1FFF\u2C00-\uD7FF\w]*)/ig
 const commonWords = ["a","aboard","about","above","across","after","against","along","amid","among","an","and","around","as","at","because","before","behind","below","beneath","beside","between","beyond","but","by","concerning","considering","despite","down","during","except","following","for","from","if","in","inside","into","is","it","like","minus","near","next","of","off","on","onto","opposite","or","out","outside","over","past","per","plus","regarding","round","save","since","than","the","through","till","to","toward","under","underneath","unlike","until","up","upon","versus","via","was","with","within","without"]
 let commonWordsDict ={}
@@ -21,48 +21,73 @@ let selectedWord = ''
 let selectedWordIndex = 0
 let wordCount = {}
 let loading = true
-let urlTitle = ''
 
-if (typeof window !== "undefined") {
-	window.onbeforeunload = function(e) {
-	if(Object.keys(guesses).length > 0) {
-		return 'Are you sure you want to leave? You are in the middle of a game.'
+loadGameState()
+loadArticle()
+
+function loadGameState() {
+	try {
+		let json = localStorage.getItem('gameState')
+		if(json !== null) {
+			gameState = JSON.parse(json)
+			return
+		}
+	} catch(e) {
+		console.log(e)
 	}
-	return null
+	gameState = getDefaultGameState()
+}
+function saveGameState() {
+	gameState.updated = (new Date()).getTime()
+	try {
+		localStorage.setItem('gameState', JSON.stringify(gameState))
+	} catch(e) {
+		console.log(e)
 	}
 }
-
-getArticle()
-
-function getArticle() {
+function getDefaultGameState() {
 	const rand = Math.floor(Math.random() * titles.length);
-	urlTitle = base64decode(titles[rand])
-
+	const urlTitle = base64decode(titles[rand])
+	return {
+		urlTitle: urlTitle,
+		guesses: {},
+		solved: false,
+		updated: (new Date()).getTime()
+	}
+}
+function newGame() {
+	if(!confirm('Are you sure you want to start a new game?')) {
+		return
+	}
+	gameState = getDefaultGameState()
+	loadArticle()
+}
+async function loadArticle() {
 	// Fetch from wikimedia rest api e.g. https://en.wikipedia.org/api/rest_v1/page/mobile-sections/Australia_%28continent%29
-	fetch(`https://en.wikipedia.org/api/rest_v1/page/mobile-sections/${urlTitle}`)
-		.then(response => response.json())
-		.then(data => {
-			let count = 0
-			let html = data.lead.sections[0].text
-			let text = getText(html)
-			count += text.length
-			wikiSections.push({
-				text: text,
-				headline: striptags(data.lead.displaytitle)
-			})
-			let i = 0;
-			while(count < 100000 && i < data.remaining.sections.length) {
-				html = data.remaining.sections[i].text
-				text = getText(html)
-				count += text.length
-				wikiSections.push({
-					text: text,
-					headline: striptags(data.remaining.sections[i].line)
-				})
-				i++
-			}
-			renderTokens()
+	let response = await fetch(`https://en.wikipedia.org/api/rest_v1/page/mobile-sections/${gameState.urlTitle}`)
+	let data = await response.json()
+	let count = 0
+	let html = data.lead.sections[0].text
+	let text = getText(html)
+	loading=true
+	count += text.length
+	wikiSections = []
+	wikiSections.push({
+		text: text,
+		headline: striptags(data.lead.displaytitle)
+	})
+	let i = 0;
+	while(count < 100000 && i < data.remaining.sections.length) {
+		html = data.remaining.sections[i].text
+		text = getText(html)
+		count += text.length
+		wikiSections.push({
+			text: text,
+			headline: striptags(data.remaining.sections[i].line)
 		})
+		i++
+	}
+	renderTokens()
 }
 function getText(html) {
 	 if (typeof window !== "undefined") {
@@ -112,11 +137,17 @@ function checkSolved(){
 	let checkSolved = true
 	// if no redactions exist in the title the puzzle has been solved
 	let titleRedaction = sections[0].tokens.find(x => x.redacted)
-	solved = titleRedaction === undefined
-	if(solved) {
-		updateLocalstorage()
-		trackEvent('win_game', {title: urlTitle})
+	gameState.solved = titleRedaction === undefined
+	if(gameState.solved) {
+		saveSolvedGame()
+		trackEvent('win_game', {title: gameState.urlTitle})
 		renderTokens()
+		animateScroll.scrollTo({
+			container: '#article', 
+			element: '#solved-message', 
+			duration: 150, 
+			offset: -25
+		})
 	}
 }
 function trackEvent(eventName, props) {
@@ -127,20 +158,15 @@ function trackEvent(eventName, props) {
 	}
 }
 const storageKey = 'solved_game_history'
-function updateLocalstorage() {
+function saveSolvedGame() {
 	let history = getHistory()
-	let date = new Date()
-	let item = {
-		title: urlTitle,
-		guesses: Object.keys(guesses).length,
-		time: date.getTime()
-	}
-	history[urlTitle] = item
-	window.localStorage.setItem(storageKey, JSON.stringify(history))
-	console.log(`solved: ${solved}`)
+	let item = gameState
+	history[gameState.urlTitle] = item
+	localStorage.setItem(storageKey, JSON.stringify(history))
+	console.log(`solved: ${gameState.solved}`)
 }
 function getHistory() {
-	return JSON.parse(window.localStorage.getItem(storageKey) || '{}')
+	return JSON.parse(localStorage.getItem(storageKey) || '{}')
 }
 
 function addSection(text, isHeadline) {
@@ -187,9 +213,9 @@ function reRenderWord(wordNormal) {
 	sections = [...sections]
 }
 function shouldRedact(wordNormal) {
-	return !solved
+	return !gameState.solved
 			&& !commonWordsDict.hasOwnProperty(wordNormal) 
-			&& !guesses.hasOwnProperty(wordNormal);
+			&& !gameState.guesses.hasOwnProperty(wordNormal);
 }
 function selectWord(word, scrollTo) {
 	selectedWordIndex = selectedWord == word ? selectedWordIndex+1 : 0
@@ -239,13 +265,15 @@ function handleSubmit() {
 		guess = ''
 		return
 	}
-	guesses[word] = wordCount[word] || 0
+	gameState.guesses[word] = wordCount[word] || 0
 
 	selectWord(word, false)
+
+	saveGameState()
 	guess = ''
 	checkSolved()
 	if(word == 'togglecheats') {
-		solved = !solved
+		gameState.solved = !gameState.solved
 		renderTokens()
 	}
 	trackEvent('guess', {word:word})
@@ -274,6 +302,7 @@ function normalize(str) {
 <div id="main">
 <nav>
 	<h1>Redactle Unlimited</h1>
+	<button id='new-game' on:click={newGame}>New Game</button>
 	<p class="info">A puzzle game to guess the title of a random Wikipedia article by revealing the words from the article. 
 		Similar to redactle.com but without the daily game limit.</p>
 </nav>
@@ -281,8 +310,8 @@ function normalize(str) {
 	{#if loading}
 		<p>loading...</p>
 	{/if}
-	{#if solved}
-		<p>Solved in {Object.keys(guesses).length} guesses!</p>
+	{#if gameState.solved}
+		<p id="solved-message">Solved in {Object.keys(gameState.guesses).length} guesses!</p>
 	{/if}
 	{#each sections as section, i}
 		{#if section.headline}
@@ -303,7 +332,7 @@ function normalize(str) {
 
 <div id="guesses">
 	<h3>
-		Guesses ({Object.keys(guesses).length})
+		Guesses ({Object.keys(gameState.guesses).length})
 	</h3>
 	<form id="guess-form" on:submit|preventDefault={handleSubmit}>
 		<button id="btn-top" type="button" on:click={() => backToTop()}>▲ Top</button>
@@ -311,9 +340,9 @@ function normalize(str) {
 		<input id="submit" type="submit" value="Guess" />
 	</form>
 	<div id="guess-list">
-		{#each Object.keys(guesses).reverse() as word, i}
-		{#if showMisses || guesses[word] > 0 || i == 0}
-		<span on:click={selectWord(word, true)} class="{(selectedWord==word ? 'highlight' : '') + (guesses[word] > 0 ? ' hit' : ' miss') + ' word'}"><b>{word}</b>({guesses[word]})</span> 
+		{#each Object.keys(gameState.guesses).reverse() as word, i}
+		{#if showMisses || gameState.guesses[word] > 0 || i == 0}
+		<span on:click={selectWord(word, true)} class="{(selectedWord==word ? 'highlight' : '') + (gameState.guesses[word] > 0 ? ' hit' : ' miss') + ' word'}"><b>{word}</b>({gameState.guesses[word]})</span> 
 		{/if}
 		{/each}
 	</div>
@@ -480,4 +509,10 @@ function normalize(str) {
         background-color: #c1c1c1;
         color: #333;
     }
+	#new-game {
+		background-color: #333;
+		color: #b6b6b6;
+		float:right;
+		cursor: pointer;
+	}
 </style>
