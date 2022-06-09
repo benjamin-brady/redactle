@@ -293,7 +293,11 @@ function base64decode(str) {
 }
 function normalize(str) {
 	// removes accents from string
-    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    return str
+		.normalize("NFD")
+		.replace(/[\u0300-\u036f]/g, "")
+		.toLowerCase()
+		.trim();
 }
 </script>
 
