@@ -3,8 +3,7 @@ import Span from './../components/Span.svelte'
 import striptags from 'striptags'
 import { element_is, get_all_dirty_from_scope, loop_guard } from 'svelte/internal'
 import * as animateScroll from "svelte-scrollto";
-
-let gameState = {}
+import { onMount } from 'svelte';
 
 let wikiSections = []
 let regex = /([\u00BF-\u1FFF\u2C00-\uD7FF\w]+)([^\u00BF-\u1FFF\u2C00-\uD7FF\w]*)/ig
@@ -22,8 +21,11 @@ let selectedWordIndex = 0
 let wordCount = {}
 let loading = true
 
-loadGameState()
-loadArticle()
+let gameState = getDefaultGameState()
+onMount(async () => {
+	loadGameState()
+	loadArticle()
+})
 
 function loadGameState() {
 	try {
@@ -36,6 +38,10 @@ function loadGameState() {
 		console.log(e)
 	}
 	gameState = getDefaultGameState()
+	const params = getLocationHashParameters()
+	if(params.has('article')) {
+		gameState.urlTitle = base64decode(params.get('article'))
+	}
 }
 function saveGameState() {
 	gameState.updated = (new Date()).getTime()
@@ -55,12 +61,26 @@ function getDefaultGameState() {
 		updated: (new Date()).getTime()
 	}
 }
+function getLocationHashParameters() {
+	let hash = window.location.hash.substring(1)
+	let params = hash.split('&')
+	let result = new Map()
+	params.forEach(p => {
+		const parts = p.split('/')
+		if(parts.length === 2) {
+			result.set(parts[0], parts[1])
+		}
+	})
+	return result
+}
 function newGame() {
 	if(!confirm('Are you sure you want to start a new game?')) {
 		return
 	}
 	gameState = getDefaultGameState()
+	window.location.hash = '#'
 	loadArticle()
+	saveGameState()
 }
 async function loadArticle() {
 	// Fetch from wikimedia rest api e.g. https://en.wikipedia.org/api/rest_v1/page/mobile-sections/Australia_%28continent%29
@@ -87,6 +107,7 @@ async function loadArticle() {
 		})
 		i++
 	}
+	window.location.href = '#article/' + base64encode(gameState.urlTitle)
 	renderTokens()
 }
 function getText(html) {
@@ -297,7 +318,8 @@ function normalize(str) {
 		.normalize("NFD")
 		.replace(/[\u0300-\u036f]/g, "")
 		.toLowerCase()
-		.trim();
+		.trim()
+		.split(' ')[0];
 }
 </script>
 
