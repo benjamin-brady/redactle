@@ -269,6 +269,16 @@ function selectWord(word, scrollTo) {
 	}
 	reRenderWord(word)
 }
+function getAccuracyPercent() {
+	let guessCount = Object.keys(gameState.guesses).length;
+	if(guessCount == 0) {
+		return 0.0
+	}
+	const hits = Object.values(gameState.guesses).filter(x => x > 0).length
+	const accuracy =  hits / guessCount
+	return `${Math.round(accuracy * 10000) / 100}`
+
+}
 function backToTop() {
 	let element = document.getElementById('headline-section-0')
 	if(element) {
@@ -337,7 +347,7 @@ function normalize(str) {
 		<p>loading...</p>
 	{/if}
 	{#if gameState.solved}
-		<p id="solved-message">Solved in {Object.keys(gameState.guesses).length} guesses!</p>
+		<p id="solved-message">Solved in {Object.keys(gameState.guesses).length} guesses with {getAccuracyPercent()}% accuracy!</p>
 	{/if}
 	{#each sections as section, i}
 		{#if section.headline}
