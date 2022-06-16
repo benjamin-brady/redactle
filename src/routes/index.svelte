@@ -61,18 +61,15 @@ function loadGameState() {
 			// if savedGames has key encodedTitle
 			if (savedGames[encodedTitle] !== undefined) {
 				gameState = savedGames[encodedTitle];
-				console.log(`load state from gamestates ${encodedTitle}`)
 				return
 			}
 		}
 
 		// Otherwise, new game 
 		gameState = getDefaultGameState()
-		console.log()
 		if(encodedTitle) {
 			gameState.encodedTitle = encodedTitle
 			gameState.urlTitle = base64decode(encodedTitle)
-			console.log(`set urlTitle = ${gameState.urlTitle}`)
 			return
 		}
 	}
@@ -106,7 +103,6 @@ function saveGameState() {
 	}
 }
 function getDefaultGameState() {
-	console.log(`load default game state`)
 	const json = localStorage.getItem('gameStates') || '{}'
 	const savedGames = JSON.parse(json)
 	const filteredTitles = titles.filter(x => savedGames[x] === undefined)
@@ -540,8 +536,9 @@ function handleCustomWikiUrl() {
 			</p>
 		</fieldset>
 		<fieldset>
-			<p>Custom Wikipedia Article: paste a wiki link to start a new game.</p>
-			<input id="input-url" type="text" bind:value={customWikiUrl} placeholder="Wikipedia URL" on:change={handleCustomWikiUrl} />
+			<legend>Custom Wikipedia Article</legend>
+			<p>Paste a wiki link to start a new game.</p>
+			<input id="custom-wiki-url" type="text" bind:value={customWikiUrl} placeholder="Wikipedia URL" on:change={handleCustomWikiUrl} />
 			{#if customGameUrl}<p>✅ Use this URL to play: <a target="_blank" href="{customGameUrl}">{customGameUrl}</a></p>{/if}
 		</fieldset>
 	</div>
@@ -765,5 +762,11 @@ function handleCustomWikiUrl() {
 		width:100%;
 		height:100%;
 		background-color: rgba(0, 0, 0, 0.3);
+	}
+	.modal input[type="text"] {
+		padding:0.5em;
+		width: 95%;
+		font-size: 1.1em;
+		border-radius: 5px;
 	}
 </style>
