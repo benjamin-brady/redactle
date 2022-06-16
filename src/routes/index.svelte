@@ -23,7 +23,7 @@ let loading = true
 
 let settings = {
   showMisses: true,
-  pluralizeGuesses: true
+  pluralizeGuesses: false
 };
 
 let gameState = getDefaultGameState()
@@ -294,6 +294,22 @@ function getWordId(word, wordIndex) {
 	let id = `${base64encode(word).replaceAll('=','a')}${wordIndex}`
 	return id
 }
+
+let shiftKeyDown = false
+function handleKeydown(e) {
+	console.log(e)
+	// shift key
+	if(e.keyCode == 16) {
+		shiftKeyDown = true
+	}
+}
+function handleKeyup(e) {
+	console.log(e)
+	// shift key
+	if(e.keyCode == 16) {
+		shiftKeyDown = false
+	}
+}
 function handleSubmit(ev) {
 	console.log(ev)
 	let guessNormalized=normalize(guess)
@@ -303,7 +319,7 @@ function handleSubmit(ev) {
 		return
 	}
 	let words = [guessNormalized]
-	if(settings.pluralizeGuesses) {
+	if(settings.pluralizeGuesses || shiftKeyDown) {
 		let plural = pluralize.plural(guessNormalized)
 		if(plural) {
 			words.push(plural)
@@ -355,6 +371,7 @@ function normalize(str) {
 
 
 
+<svelte:window on:keydown={handleKeydown} on:keyup="{handleKeyup}"/>
 <div id="main">
 <nav>
 	<h1>Redactle Unlimited</h1>
@@ -392,7 +409,7 @@ function normalize(str) {
 	</h3>
 	<form id="guess-form" on:submit|preventDefault={handleSubmit}>
 		<button id="btn-top" type="button" on:click={() => backToTop()}>▲ Top</button>
-		<input id="input-guess" bind:value={guess} placeholder="guess a word..." autocomplete="off"/>
+		<input id="input-guess" bind:value={guess} placeholder="guess a word..." autocomplete="off" title="Hold shift key to pluralize."/>
 		<input id="submit" type="submit" value="Guess" />
 	</form>
 	<div id="guess-list">
