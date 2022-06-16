@@ -26,6 +26,7 @@
 	"type": "module",
 	"dependencies": {
 		"html-to-text": "^8.2.0",
+		"pluralize": "^8.0.0",
 		"striptags": "^3.2.0"
 	}
 }
