@@ -26,7 +26,7 @@ let settings = {}
 let showWon = false
 $: showModal = showSettings || showWon
 
-let gameState = getDefaultGameState()
+let gameState
 onMount(async () => {
 	loadSettings()
 	loadGameState()
@@ -47,34 +47,78 @@ function getDefaultSettings() {
 		pluralizeGuesses: false
 	}
 }
+
 function loadGameState() {
-	let json = localStorage.getItem('gameState')
+	// The game article should be driven by the URL as the source of truth
+	const params = getLocationHashParameters()
+	const encodedTitle = params.get('article')
+
+	if(encodedTitle) {
+		// Try to get state for the article
+		let json = localStorage.getItem('gameStates')
+		if (json != null) {
+			const savedGames = JSON.parse(json)
+			// if savedGames has key encodedTitle
+			if (savedGames[encodedTitle] !== undefined) {
+				gameState = savedGames[encodedTitle];
+				console.log(`load state from gamestates ${encodedTitle}`)
+				return
+			}
+		}
+
+		// Otherwise, new game 
+		gameState = getDefaultGameState()
+		console.log()
+		if(encodedTitle) {
+			gameState.encodedTitle = encodedTitle
+			gameState.urlTitle = base64decode(encodedTitle)
+			console.log(`set urlTitle = ${gameState.urlTitle}`)
+			return
+		}
+	}
+
+	// TODO - remove - Legacy global gameState
+	const json = localStorage.getItem('gameState')
 	if(json !== null) {
 		gameState = JSON.parse(json)
+		gameState.encodedTitle = base64encode(gameState.urlTitle)
+		gameState.created = gameState.updated
+		console.log(`load state from global gamestate ${encodedTitle}`)
 		return
 	}
+
+	// New game with random article
 	gameState = getDefaultGameState()
-	const params = getLocationHashParameters()
-	if(params.has('article')) {
-		gameState.urlTitle = base64decode(params.get('article'))
-	}
+	saveGameState()
 }
 function saveGameState() {
 	gameState.updated = (new Date()).getTime()
 	try {
+		const json = localStorage.getItem('gameStates') || '{}'
+		const savedGames = JSON.parse(json)
+		savedGames[gameState.encodedTitle] = gameState;
+		localStorage.setItem('gameStates', JSON.stringify(savedGames))
+
+		// TODO - remove - Legacy global gameState
 		localStorage.setItem('gameState', JSON.stringify(gameState))
 	} catch(e) {
 		console.log(e)
 	}
 }
 function getDefaultGameState() {
-	const rand = Math.floor(Math.random() * titles.length);
-	const urlTitle = base64decode(titles[rand])
+	console.log(`load default game state`)
+	const json = localStorage.getItem('gameStates') || '{}'
+	const savedGames = JSON.parse(json)
+	const filteredTitles = titles.filter(x => savedGames[x] === undefined)
+	const rand = Math.floor(Math.random() * filteredTitles.length);
+	const encodedTitle = filteredTitles[rand]
 	return {
-		urlTitle: urlTitle,
+		urlTitle: base64decode(encodedTitle),
+		encodedTitle : encodedTitle,
 		guesses: {},
 		solved: false,
-		updated: (new Date()).getTime()
+		updated: (new Date()).getTime(),
+		created:  (new Date()).getTime()
 	}
 }
 function getLocationHashParameters() {
@@ -316,6 +360,7 @@ function handleKeyup(e) {
 	// esc key
 	if(e.keyCode == 27) {
 		showSettings = false
+		showWon = false
 	}
 }
 function handleSubmit(ev) {
@@ -417,6 +462,14 @@ function shareWon() {
 	shareWonCopied = true
 	setTimeout(() => shareWonCopied = false, 5000)
 }
+let customWikiUrl
+let customGameUrl
+function handleCustomWikiUrl() {
+	const parts = customWikiUrl.split('/');
+	const title = parts[parts.length-1]
+	const base64title = base64encode(title)
+	customGameUrl = window.location.origin + window.location.pathname + '#article/' + base64title
+}
 </script>
 
 
@@ -450,7 +503,7 @@ function shareWon() {
 		{/if}
 	{/each}
 </div>
-
+{#if gameState}
 <div id="guesses">
 	<h3>
 		Guesses ({Object.keys(gameState.guesses).length})
@@ -468,6 +521,7 @@ function shareWon() {
 		{/each}
 	</div>
 </div>
+{/if}
 
 {#if showModal}
 <div id="modal-container" on:click|self={() => {showSettings = false}} >
@@ -475,14 +529,21 @@ function shareWon() {
 	<div id="settings" class="modal">
 		<span class="close" on:click={() => {showSettings = false}}>⨯</span>
 		<h3>Settings</h3>
-		<p>
-			<input id="input-pluralize" type="checkbox" bind:checked={settings.pluralizeGuesses} on:change={saveSettings} />
-			<label for="input-pluralize">Attempt to pluralize guesses.</label>
-		</p>
-		<p>	
-			<input id="input-show-misses" type="checkbox" bind:checked={settings.showMisses} on:change={saveSettings} />
-			<label for="input-show-misses">Show guesses with zero matches.</label>
-		</p>
+		<fieldset>
+			<p>
+				<input id="input-pluralize" type="checkbox" bind:checked={settings.pluralizeGuesses} on:change={saveSettings} />
+				<label for="input-pluralize">Attempt to pluralize guesses.</label>
+			</p>
+			<p>	
+				<input id="input-show-misses" type="checkbox" bind:checked={settings.showMisses} on:change={saveSettings} />
+				<label for="input-show-misses">Show guesses with zero matches.</label>
+			</p>
+		</fieldset>
+		<fieldset>
+			<p>Custom Wikipedia Article: paste a wiki link to start a new game.</p>
+			<input id="input-url" type="text" bind:value={customWikiUrl} placeholder="Wikipedia URL" on:change={handleCustomWikiUrl} />
+			{#if customGameUrl}<p>✅ Use this URL to play: <a target="_blank" href="{customGameUrl}">{customGameUrl}</a></p>{/if}
+		</fieldset>
 	</div>
 	{:else if showWon}
 	<div id="solved" class="modal">
@@ -506,6 +567,9 @@ function shareWon() {
 		color: #b6b6b6;
 	}
 
+	a, a:visited {
+		color: #6dacff;
+	}
 	#main {
 		display: grid;
 		grid-template-rows: 90px 1fr;
