@@ -1,7 +1,7 @@
 <script>
 import Span from './../components/Span.svelte'
 import striptags from 'striptags'
-import { element_is, get_all_dirty_from_scope, loop_guard } from 'svelte/internal'
+import { add_classes, element_is, get_all_dirty_from_scope, loop_guard } from 'svelte/internal'
 import * as animateScroll from "svelte-scrollto";
 import { onMount } from 'svelte';
 import * as pluralize from 'pluralize';
@@ -21,26 +21,37 @@ let selectedWordIndex = 0
 let wordCount = {}
 let loading = true
 
-let settings = {
-  showMisses: true,
-  pluralizeGuesses: false
-};
+let showSettings = false
+let settings = {}
+let showWon = false
+$: showModal = showSettings || showWon
 
 let gameState = getDefaultGameState()
 onMount(async () => {
+	loadSettings()
 	loadGameState()
 	loadArticle()
 })
-
+function loadSettings() {
+	settings = JSON.parse(localStorage.getItem('settings'))
+	if (settings == null) {
+		settings = getDefaultSettings()
+	}
+}
+function saveSettings() {
+	localStorage.setItem('settings', JSON.stringify(settings))
+}
+function getDefaultSettings() {
+	return {
+		showMisses: true,
+		pluralizeGuesses: false
+	}
+}
 function loadGameState() {
-	try {
-		let json = localStorage.getItem('gameState')
-		if(json !== null) {
-			gameState = JSON.parse(json)
-			return
-		}
-	} catch(e) {
-		console.log(e)
+	let json = localStorage.getItem('gameState')
+	if(json !== null) {
+		gameState = JSON.parse(json)
+		return
 	}
 	gameState = getDefaultGameState()
 	const params = getLocationHashParameters()
@@ -165,15 +176,10 @@ function checkSolved(){
 	let titleRedaction = sections[0].tokens.find(x => x.redacted)
 	gameState.solved = titleRedaction === undefined
 	if(gameState.solved) {
+		showWon = true
 		saveSolvedGame()
 		trackEvent('win_game', {title: gameState.urlTitle})
 		renderTokens()
-		animateScroll.scrollTo({
-			container: '#article', 
-			element: '#solved-message', 
-			duration: 150, 
-			offset: -25
-		})
 	}
 }
 function trackEvent(eventName, props) {
@@ -297,17 +303,19 @@ function getWordId(word, wordIndex) {
 
 let shiftKeyDown = false
 function handleKeydown(e) {
-	console.log(e)
 	// shift key
 	if(e.keyCode == 16) {
 		shiftKeyDown = true
 	}
 }
 function handleKeyup(e) {
-	console.log(e)
 	// shift key
 	if(e.keyCode == 16) {
 		shiftKeyDown = false
+	}
+	// esc key
+	if(e.keyCode == 27) {
+		showSettings = false
 	}
 }
 function handleSubmit(ev) {
@@ -342,6 +350,7 @@ function handleSubmit(ev) {
 	saveGameState()
 	if(guessNormalized == 'togglecheats') {
 		gameState.solved = !gameState.solved
+		showWon = true
 		renderTokens()
 	}
 }
@@ -367,6 +376,47 @@ function normalize(str) {
 		.trim()
 		.split(' ')[0];
 }
+function fallbackCopyTextToClipboard(text) {
+  var textArea = document.createElement("textarea");
+  textArea.value = text;
+  
+  // Avoid scrolling to bottom
+  textArea.style.top = "0";
+  textArea.style.left = "0";
+  textArea.style.position = "fixed";
+
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+
+  try {
+    var successful = document.execCommand('copy');
+    var msg = successful ? 'successful' : 'unsuccessful';
+    console.log('Fallback: Copying text command was ' + msg);
+  } catch (err) {
+    console.error('Fallback: Oops, unable to copy', err);
+  }
+
+  document.body.removeChild(textArea);
+}
+function copyTextToClipboard(text) {
+  if (!navigator.clipboard) {
+    fallbackCopyTextToClipboard(text);
+    return;
+  }
+  navigator.clipboard.writeText(text).then(function() {
+    console.log('Async: Copying to clipboard was successful!');
+  }, function(err) {
+    console.error('Async: Could not copy text: ', err);
+  });
+}
+let shareWonCopied = false
+function shareWon() {
+	const text = document.getElementById('share-text')?.innerText;
+	copyTextToClipboard(text)
+	shareWonCopied = true
+	setTimeout(() => shareWonCopied = false, 5000)
+}
 </script>
 
 
@@ -376,15 +426,13 @@ function normalize(str) {
 <nav>
 	<h1>Redactle Unlimited</h1>
 	<button id='new-game' on:click={newGame}>New Game</button>
+	<button id="settings" on:click={() => showSettings = !showSettings}>⚙️</button>
 	<p class="info">A puzzle game to guess the title of a random Wikipedia article by revealing the words from the article. 
 		Similar to redactle.com but without the daily game limit.</p>
 </nav>
 <div id="article">
 	{#if loading}
 		<p>loading...</p>
-	{/if}
-	{#if gameState.solved}
-		<p id="solved-message">Solved in {Object.keys(gameState.guesses).length} guesses with {getAccuracyPercent()}% accuracy!</p>
 	{/if}
 	{#each sections as section, i}
 		{#if section.headline}
@@ -419,8 +467,37 @@ function normalize(str) {
 		{/if}
 		{/each}
 	</div>
-	</div>
 </div>
+
+{#if showModal}
+<div id="modal-container" on:click|self={() => {showSettings = false}} >
+	{#if showSettings}
+	<div id="settings" class="modal">
+		<span class="close" on:click={() => {showSettings = false}}>⨯</span>
+		<h3>Settings</h3>
+		<p>
+			<input id="input-pluralize" type="checkbox" bind:checked={settings.pluralizeGuesses} on:change={saveSettings} />
+			<label for="input-pluralize">Attempt to pluralize guesses.</label>
+		</p>
+		<p>	
+			<input id="input-show-misses" type="checkbox" bind:checked={settings.showMisses} on:change={saveSettings} />
+			<label for="input-show-misses">Show guesses with zero matches.</label>
+		</p>
+	</div>
+	{:else if showWon}
+	<div id="solved" class="modal">
+		<span class="close" on:click={() => {showWon = false}}>⨯</span>
+		<h3>Solved!</h3>
+		<p id="solved-message">You solved Redactle Unlimited in {Object.keys(gameState.guesses).length} guesses with {getAccuracyPercent()}% accuracy!</p>
+		<p id="share-text" style="display:none;">I solved Redactle Unlimied in {Object.keys(gameState.guesses).length} guesses with {getAccuracyPercent()}% accuracy! Play at {window.location}.</p>
+		<button id="copy-share" on:click={shareWon}>{#if shareWonCopied}Copied ✅{:else}Copy and Share{/if}</button>
+	</div>
+	{/if}
+</div>
+{/if}
+
+</div>
+
 <style>
 	body {
 		margin:0;
@@ -511,6 +588,17 @@ function normalize(str) {
         background-color: #c7a002;
 		display: inline;
 	}
+
+	nav button, .modal button {
+		background-color: #444;
+		color: #bababa;
+		float: right;
+		cursor: pointer;
+		border-radius: 5px;
+		border: 1px solid #c79f02;
+		height: 1.5rem;
+		margin: 0 0 0 .2em;
+	}
 	#article h2, #article p, #guess-list .word {
 		font-family:Consolas,monospace;
 		line-height: 1.5;
@@ -518,7 +606,7 @@ function normalize(str) {
 		border-radius: 3px;
 	}
 	
-	#guesses h3 {
+	h3 {
 		margin:.3em 0;
 	}
 	#guess-form input, #guess-form button {
@@ -584,10 +672,34 @@ function normalize(str) {
         background-color: #c1c1c1;
         color: #333;
     }
-	#new-game {
-		background-color: #333;
-		color: #b6b6b6;
-		float:right;
-		cursor: pointer;
+	.modal {
+		max-width: 700px;
+		width: 85%;
+		position: fixed;
+		top: 30%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		border-radius: 5px;
+		background: #373737;
+		display: block;
+		padding:0.5rem;
+	}
+	.modal.show {
+		display: block;
+	}
+	.close {
+		cursor:pointer;
+		color:white;
+		position:absolute;
+		top:0;
+		font-size:32px;
+		right:0;
+		margin-right: 10px;
+	}
+	#modal-container {
+		position: fixed;
+		width:100%;
+		height:100%;
+		background-color: rgba(0, 0, 0, 0.3);
 	}
 </style>
