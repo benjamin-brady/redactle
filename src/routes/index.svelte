@@ -520,7 +520,7 @@ function handleCustomWikiUrl() {
 {/if}
 
 {#if showModal}
-<div id="modal-container" on:click|self={() => {showSettings = false}} >
+<div id="modal-container" on:mousedown|self={() => {showSettings = false}} >
 	{#if showSettings}
 	<div id="settings" class="modal">
 		<span class="close" on:click={() => {showSettings = false}}>⨯</span>
