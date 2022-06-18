@@ -386,6 +386,8 @@ function handleSubmit(ev) {
 	})
 	// select most common word
 	selectWord(wordsCount[wordsCount.length-1].word, false)
+	// rerender everything not selected as well
+	wordsCount.slice(0,-1).forEach(w => reRenderWord(w.word))
 	guess = ''
 	checkSolved()
 	saveGameState()
