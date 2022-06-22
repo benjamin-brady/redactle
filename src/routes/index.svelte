@@ -549,6 +549,7 @@ function handleCustomWikiUrl() {
 		<span class="close" on:click={() => {showWon = false}}>⨯</span>
 		<h3>Solved!</h3>
 		<p id="solved-message">You solved Redactle Unlimited in {Object.keys(gameState.guesses).length} guesses with {getAccuracyPercent()}% accuracy!</p>
+		<p id="wikipedia-link">Read article on <a href="https://en.wikipedia.org/wiki/{gameState.urlTitle}" target="_blank" rel="noopener">Wikipedia</a></p>
 		<p id="share-text" style="display:none;">I solved Redactle Unlimited in {Object.keys(gameState.guesses).length} guesses with {getAccuracyPercent()}% accuracy! Play at {window.location}.</p>
 		<button id="copy-share" on:click={shareWon}>{#if shareWonCopied}Copied ✅{:else}Copy and Share{/if}</button>
 	</div>
