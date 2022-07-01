@@ -6,17 +6,18 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
 		<meta http-equiv="content-security-policy" content="">
 	<link rel="stylesheet" href="/redactle/_app/immutable/assets/pages/index.svelte-ced90de3.css">
-	<link rel="modulepreload" href="/redactle/_app/immutable/start-32376269.js">
+	<link rel="modulepreload" href="/redactle/_app/immutable/start-9635170d.js">
 	<link rel="modulepreload" href="/redactle/_app/immutable/chunks/index-737d581a.js">
 	<link rel="modulepreload" href="/redactle/_app/immutable/layout.svelte-23c0b8de.js">
-	<link rel="modulepreload" href="/redactle/_app/immutable/pages/index.svelte-24870df4.js">
+	<link rel="modulepreload" href="/redactle/_app/immutable/pages/index.svelte-20cb7662.js">
 
 		<meta property="og:title" content="Redactle Unlimited - Puzzle Game" />
 		<meta property="og:type" content="website" />
 		<meta property="og:description" content="Guess the title of a random wikipedia article by revealing the redacted words." />
 		<meta property="og:image" content="https://benjamin-brady.github.io/redactle/thumbnail.jpg" />
 		<meta property="og:url" content="https://benjamin-brady.github.io/redactle/" />
-
+		<meta property="description" content="Guess the title of a random wikipedia article by revealing the redacted words. Inspired by redactle.com." />
+		
 		<!-- Global site tag (gtag.js) - Google Analytics -->
 		<script async src="https://www.googletagmanager.com/gtag/js?id=G-2HTCL2PMBK"></script>
 		<script>
@@ -33,7 +34,8 @@
 
 
 <div id="main" class="svelte-1016j7j"><nav class="svelte-1016j7j"><h1 class="svelte-1016j7j">Redactle Unlimited</h1>
-	<button id="new-game" class="svelte-1016j7j">New Game</button>
+	<button id="new-game" class="svelte-1016j7j">Random Article</button>
+	<button id="new-game" class="svelte-1016j7j">Today&#39;s Redactle</button>
 	<button id="settings" class="svelte-1016j7j">⚙️</button>
 	<p class="info svelte-1016j7j">A puzzle game to guess the title of a random Wikipedia article by revealing the words from the article. 
 		Similar to redactle.com but without the daily game limit.</p></nav>
@@ -46,10 +48,10 @@
 </div>
 
 
-		<script type="module" data-sveltekit-hydrate="18l51db">
-		import { start } from "/redactle/_app/immutable/start-32376269.js";
+		<script type="module" data-sveltekit-hydrate="udrrz">
+		import { start } from "/redactle/_app/immutable/start-9635170d.js";
 		start({
-			target: document.querySelector('[data-sveltekit-hydrate="18l51db"]').parentNode,
+			target: document.querySelector('[data-sveltekit-hydrate="udrrz"]').parentNode,
 			paths: {"base":"/redactle","assets":"/redactle"},
 			session: {},
 			route: true,
